@@ -25,7 +25,24 @@ async function run() {
     const database = client.db("FitRackDB");
     const userCollection = database.collection("users");
 
-    userCollection.insertOne({ name: "fuad", age: 19 });
+    // User API---------------------------------
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      // Except registration
+      const query = { email: user.email };
+      const axsisting = await userCollection.find(query);
+      if (axsisting) {
+        return res.send({ message: "User already axist" });
+      }
+
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
