@@ -31,13 +31,13 @@ async function run() {
       const user = req.body;
       // Except registration
       const query = { email: user.email };
-      const axsisting = await userCollection.find(query);
+      const axsisting = await userCollection.findOne(query);
       if (axsisting) {
         return res.send({ message: "User already axist" });
+      } else {
+        const result = await userCollection.insertOne(user);
+        res.send(result);
       }
-
-      const result = await userCollection.insertOne(user);
-      res.send(result);
     });
 
     app.get("/users", async (req, res) => {
