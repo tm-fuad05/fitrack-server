@@ -24,6 +24,7 @@ async function run() {
     // Database & Collection
     const database = client.db("FitRackDB");
     const userCollection = database.collection("users");
+    const newsletterCollection = database.collection("newsletter");
 
     // User API---------------------------------
     app.post("/users", async (req, res) => {
@@ -41,6 +42,13 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Newsletter Api
+    app.post("/newsletter", async (req, res) => {
+      const newsletterInfo = req.body;
+      const result = await newsletterCollection.insertOne(newsletterInfo);
       res.send(result);
     });
 
