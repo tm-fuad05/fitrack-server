@@ -74,6 +74,10 @@ async function run() {
       const result = await newsletterCollection.insertOne(newsletterInfo);
       res.send(result);
     });
+    app.get("/newsletter", async (req, res) => {
+      const result = await newsletterCollection.find().toArray();
+      res.send(result);
+    });
 
     // Reviews Api----------------------------
     app.get("/reviews", async (req, res) => {
