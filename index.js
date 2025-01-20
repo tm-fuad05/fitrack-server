@@ -25,6 +25,8 @@ async function run() {
     const database = client.db("FitRackDB");
     const userCollection = database.collection("users");
     const reviewCollection = database.collection("reviews");
+    const trainerCollection = database.collection("trainers");
+    const appliedTrainerCollection = database.collection("applied trainers");
     const newsletterCollection = database.collection("newsletter");
 
     // User API---------------------------------
@@ -43,6 +45,26 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // All Trainers Api -------------------------------
+    app.get("/trainers", async (req, res) => {
+      const result = await trainerCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/trainers/:trainerName", async (req, res) => {
+      const trainerName = req.params.trainerName;
+      const result = await trainerCollection.findOne({
+        trainerName: trainerName,
+      });
+      res.send(result);
+    });
+
+    // Be a trainer -------------------------
+    app.post("/applied-as-trainer", async (req, res) => {
+      const trainerInfo = req.body;
+      const result = await appliedTrainerCollection.insertOne(trainerInfo);
       res.send(result);
     });
 
