@@ -26,6 +26,8 @@ async function run() {
     const userCollection = database.collection("users");
     const reviewCollection = database.collection("reviews");
     const trainerCollection = database.collection("trainers");
+    const confirmedTrainerCollection =
+      database.collection("Confirmed Trainers");
     const appliedTrainerCollection = database.collection("applied trainers");
     const newsletterCollection = database.collection("newsletter");
 
@@ -60,6 +62,7 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedRole);
       res.send(result);
     });
+
     // Make user Trainer ----------------
     app.patch("/users/make-trainer/:id", async (req, res) => {
       const userId = req.params.id;
@@ -110,6 +113,24 @@ async function run() {
         _id: new ObjectId(id),
       });
 
+      res.send(result);
+    });
+    app.delete("/applied-as-trainer/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await appliedTrainerCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.send(result);
+    });
+
+    // Confirmed Trainers ----------------------------
+    app.post("/confirmed-trainer", async (req, res) => {
+      const trainer = req.body;
+      const result = await confirmedTrainerCollection.insertOne(trainer);
+      res.send(result);
+    });
+    app.get("/confirmed-trainer", async (req, res) => {
+      const result = await confirmedTrainerCollection.find().toArray();
       res.send(result);
     });
 
