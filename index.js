@@ -100,6 +100,18 @@ async function run() {
       const result = await appliedTrainerCollection.insertOne(trainerInfo);
       res.send(result);
     });
+    app.get("/applied-as-trainer", async (req, res) => {
+      const result = await appliedTrainerCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/applied-as-trainer/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await appliedTrainerCollection.findOne({
+        _id: new ObjectId(id),
+      });
+
+      res.send(result);
+    });
 
     // Newsletter Api-----------------------------
     app.post("/newsletter", async (req, res) => {
