@@ -78,6 +78,19 @@ async function run() {
       res.send(result);
     });
 
+    // Make Trainer Member ----------------
+    app.patch("/users/make-member/:id", async (req, res) => {
+      const userId = req.params.id;
+      const filter = { _id: new ObjectId(userId) };
+      const updatedRole = {
+        $set: {
+          role: "member",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
+      res.send(result);
+    });
+
     app.delete("/users/:id", async (req, res) => {
       const userId = req.params.id;
       const result = await userCollection.deleteOne({
