@@ -26,9 +26,11 @@ async function run() {
     const userCollection = database.collection("users");
     const reviewCollection = database.collection("reviews");
     const trainerCollection = database.collection("trainers");
-    const confirmedTrainerCollection =
-      database.collection("Confirmed Trainers");
+    // const confirmedTrainerCollection =
+    //   database.collection("Confirmed Trainers");
     const appliedTrainerCollection = database.collection("applied trainers");
+    const rejectionFeedbackCollection =
+      database.collection("Rejection Feedback");
     const newsletterCollection = database.collection("newsletter");
 
     // User API---------------------------------
@@ -97,7 +99,7 @@ async function run() {
       res.send(result);
     });
 
-    // Be a trainer -------------------------
+    // Applied Trainer -------------------------
     app.post("/applied-as-trainer", async (req, res) => {
       const trainerInfo = req.body;
       const result = await appliedTrainerCollection.insertOne(trainerInfo);
@@ -123,16 +125,31 @@ async function run() {
       res.send(result);
     });
 
+    // Rejection Feedback
+    app.post("/rejection-feedback", async (req, res) => {
+      const feedback = req.body;
+      const result = await rejectionFeedbackCollection.insertOne(feedback);
+      res.send(result);
+    });
+
     // Confirmed Trainers ----------------------------
-    app.post("/confirmed-trainer", async (req, res) => {
-      const trainer = req.body;
-      const result = await confirmedTrainerCollection.insertOne(trainer);
-      res.send(result);
-    });
-    app.get("/confirmed-trainer", async (req, res) => {
-      const result = await confirmedTrainerCollection.find().toArray();
-      res.send(result);
-    });
+    // app.post("/confirmed-trainer", async (req, res) => {
+    //   const trainer = req.body;
+    //   const result = await confirmedTrainerCollection.insertOne(trainer);
+    //   res.send(result);
+    // });
+    // app.get("/confirmed-trainer", async (req, res) => {
+    //   const result = await confirmedTrainerCollection.find().toArray();
+    //   res.send(result);
+    // });
+
+    // app.delete("/confirmed-trainer/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const result = await confirmedTrainerCollection.deleteOne({
+    //     _id: new ObjectId(id),
+    //   });
+    //   res.send(result);
+    // });
 
     // Newsletter Api-----------------------------
     app.post("/newsletter", async (req, res) => {
