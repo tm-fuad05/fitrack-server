@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -45,6 +45,39 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    //  Make user admin------------------
+    app.patch("/users/make-admin/:id", async (req, res) => {
+      const userId = req.params.id;
+      const filter = { _id: new ObjectId(userId) };
+      const updatedRole = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
+      res.send(result);
+    });
+    // Make user Trainer ----------------
+    app.patch("/users/make-trainer/:id", async (req, res) => {
+      const userId = req.params.id;
+      const filter = { _id: new ObjectId(userId) };
+      const updatedRole = {
+        $set: {
+          role: "trainer",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
+      res.send(result);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const userId = req.params.id;
+      const result = await userCollection.deleteOne({
+        _id: new ObjectId(userId),
+      });
       res.send(result);
     });
 
