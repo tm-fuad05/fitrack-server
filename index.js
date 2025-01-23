@@ -26,9 +26,13 @@ async function run() {
     const userCollection = database.collection("users");
     const reviewCollection = database.collection("reviews");
     const trainerCollection = database.collection("trainers");
+    const classCollection = database.collection("classes");
     // const confirmedTrainerCollection =
     //   database.collection("Confirmed Trainers");
     const appliedTrainerCollection = database.collection("applied trainers");
+    const userApplicationForTrainerCollection = database.collection(
+      "User Application For Trainer"
+    );
     const rejectionFeedbackCollection =
       database.collection("Rejection Feedback");
     const newsletterCollection = database.collection("newsletter");
@@ -49,6 +53,19 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/users/:id", async (req, res) => {
+      const userId = req.params.id;
+      const updatedUserInfo = req.body;
+      const filter = { _id: new ObjectId(userId) };
+      const updatedProfile = {
+        $set: {
+          name: updatedUserInfo.name,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedProfile);
       res.send(result);
     });
 
@@ -99,15 +116,33 @@ async function run() {
       res.send(result);
     });
 
+    // All Classes API -------------------------------
+    app.post("/classes", async (req, res) => {
+      const classInfo = req.body;
+      const result = await classCollection.insertOne(classInfo);
+      res.send(result);
+    });
+    app.get("/classes", async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    });
+
     // All Trainers Api -------------------------------
+    app.post("/trainers", async (req, res) => {
+      const trainer = req.body;
+      const result = await trainerCollection.insertOne(trainer);
+      res.send(result);
+    });
+
     app.get("/trainers", async (req, res) => {
       const result = await trainerCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/trainers/:trainerName", async (req, res) => {
       const trainerName = req.params.trainerName;
       const result = await trainerCollection.findOne({
-        trainerName: trainerName,
+        fullName: trainerName,
       });
       res.send(result);
     });
@@ -130,6 +165,20 @@ async function run() {
 
       res.send(result);
     });
+    app.patch("/applied-as-trainer/:id", async (req, res) => {
+      const applicantId = req.params.id;
+      const filter = { _id: new ObjectId(applicantId) };
+      const updateStatus = {
+        $set: {
+          status: "rejected",
+        },
+      };
+      const result = await appliedTrainerCollection.updateOne(
+        filter,
+        updateStatus
+      );
+      res.send(result);
+    });
     app.delete("/applied-as-trainer/:id", async (req, res) => {
       const id = req.params.id;
       const result = await appliedTrainerCollection.deleteOne({
@@ -138,31 +187,16 @@ async function run() {
       res.send(result);
     });
 
-    // Rejection Feedback
+    // Rejection Feedback-----------------------
     app.post("/rejection-feedback", async (req, res) => {
       const feedback = req.body;
       const result = await rejectionFeedbackCollection.insertOne(feedback);
       res.send(result);
     });
-
-    // Confirmed Trainers ----------------------------
-    // app.post("/confirmed-trainer", async (req, res) => {
-    //   const trainer = req.body;
-    //   const result = await confirmedTrainerCollection.insertOne(trainer);
-    //   res.send(result);
-    // });
-    // app.get("/confirmed-trainer", async (req, res) => {
-    //   const result = await confirmedTrainerCollection.find().toArray();
-    //   res.send(result);
-    // });
-
-    // app.delete("/confirmed-trainer/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const result = await confirmedTrainerCollection.deleteOne({
-    //     _id: new ObjectId(id),
-    //   });
-    //   res.send(result);
-    // });
+    app.get("/rejection-feedback", async (req, res) => {
+      const result = await rejectionFeedbackCollection.find().toArray();
+      res.send(result);
+    });
 
     // Newsletter Api-----------------------------
     app.post("/newsletter", async (req, res) => {
