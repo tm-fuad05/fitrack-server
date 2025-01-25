@@ -3,9 +3,11 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SEC_KEY);
 const port = process.env.PORT || 5000;
 var jwt = require("jsonwebtoken");
 
+app.use(express.static("public"));
 app.use(cors());
 app.use(express.json());
 
@@ -30,6 +32,7 @@ async function run() {
     const trainerCollection = database.collection("trainers");
     const classCollection = database.collection("classes");
     const appliedTrainerCollection = database.collection("applied trainers");
+    const paymentCollection = database.collection("payments");
     const rejectionFeedbackCollection =
       database.collection("Rejection Feedback");
     const newsletterCollection = database.collection("newsletter");
@@ -62,6 +65,28 @@ async function run() {
       }
       next();
     };
+    // VerifyTrainer
+    const VerifyTrainer = async (req, res, next) => {
+      const email = req.decoded.email;
+      const user = await userCollection.findOne({ email: email });
+      const isTrainer = user?.role === "trainer";
+      if (!isTrainer) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      next();
+    };
+
+    // VerifyAdminORTrainer
+    const VerifyAdminORTrainer = async (req, res, next) => {
+      const email = req.decoded.email;
+      const user = await userCollection.findOne({ email: email });
+      const isTrainer = user?.role === "trainer";
+      const isAdmin = user?.role === "admin";
+      if (!isTrainer && !isAdmin) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      next();
+    };
 
     // JWT API --------------------------
     app.post("/jwt", async (req, res) => {
@@ -85,6 +110,22 @@ async function run() {
         isAdmin = user?.role === "admin";
       }
       res.send({ isAdmin });
+    });
+
+    // Trainer check---------------
+
+    app.get("/user/trainer/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "Forbidden access!" });
+      }
+
+      const user = await userCollection.findOne({ email: email });
+      let isTrainer = false;
+      if (user) {
+        isTrainer = user?.role === "trainer";
+      }
+      res.send({ isTrainer });
     });
 
     // User API---------------------------------
@@ -202,11 +243,16 @@ async function run() {
     });
 
     // Community API -----------------------
-    app.post("/community", verifyToken, VerifyAdmin, async (req, res) => {
-      const forumInfo = req.body;
-      const result = await communityCollection.insertOne(forumInfo);
-      res.send(result);
-    });
+    app.post(
+      "/community",
+      verifyToken,
+      VerifyAdminORTrainer,
+      async (req, res) => {
+        const forumInfo = req.body;
+        const result = await communityCollection.insertOne(forumInfo);
+        res.send(result);
+      }
+    );
     app.get("/community", async (req, res) => {
       const result = await communityCollection.find().toArray();
       res.send(result);
@@ -288,6 +334,23 @@ async function run() {
       res.send(result);
     });
 
+    // Payments
+    app.post("/payments", async (req, res) => {
+      const paymentInfo = req.body;
+      const result = await paymentCollection.insertOne(paymentInfo);
+      res.send(result);
+    });
+
+    app.get("/payments", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/payments", async (req, res) => {
+      const email = req.query.email;
+      const result = await paymentCollection.find({ email }).toArray();
+      res.send(result);
+    });
+
     // Applied Trainer -------------------------
     app.post("/applied-as-trainer", verifyToken, async (req, res) => {
       const trainerInfo = req.body;
@@ -361,9 +424,31 @@ async function run() {
     });
 
     // Reviews Api----------------------------
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
       res.send(result);
+    });
+
+    // Payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
     });
 
     console.log(
