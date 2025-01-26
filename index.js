@@ -345,7 +345,17 @@ async function run() {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
-    app.get("/payments", async (req, res) => {
+    // Recent 6 transaction
+    app.get("/recent-payments", async (req, res) => {
+      const result = await paymentCollection
+        .find()
+        .sort({ _id: -1 })
+        .limit(6)
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/payments/user", async (req, res) => {
       const email = req.query.email;
       const result = await paymentCollection.find({ email }).toArray();
       res.send(result);
