@@ -142,11 +142,11 @@ async function run() {
       }
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
-
+    // Update User Info : (Name)
     app.patch("/users/:id", verifyToken, async (req, res) => {
       const userId = req.params.id;
       const updatedUserInfo = req.body;
@@ -322,31 +322,32 @@ async function run() {
       });
       res.send(result);
     });
-    app.get("/trainer-booking/:trainerName/:days", async (req, res) => {
-      const days = req.params.days;
-      const trainerName = req.params.trainerName;
-      // const skills = req.params.skills;
-      const query = {
-        fullName: trainerName,
-        availableDays: days,
+    app.patch("/trainers/:id", verifyToken, async (req, res) => {
+      const managedSlots = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedSlots = {
+        $set: {
+          availableDays: managedSlots.availableDays,
+        },
       };
-      const result = await trainerCollection.findOne(query);
+      const result = await trainerCollection.updateOne(filter, updatedSlots);
       res.send(result);
     });
 
-    // Payments
-    app.post("/payments", async (req, res) => {
+    // Payments---------------------------
+    app.post("/payments", verifyToken, async (req, res) => {
       const paymentInfo = req.body;
       const result = await paymentCollection.insertOne(paymentInfo);
       res.send(result);
     });
 
-    app.get("/payments", async (req, res) => {
+    app.get("/payments", verifyToken, async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
     // Recent 6 transaction
-    app.get("/recent-payments", async (req, res) => {
+    app.get("/recent-payments", verifyToken, VerifyAdmin, async (req, res) => {
       const result = await paymentCollection
         .find()
         .sort({ _id: -1 })
@@ -355,7 +356,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/payments/user", async (req, res) => {
+    app.get("/payments/user", verifyToken, async (req, res) => {
       const email = req.query.email;
       const result = await paymentCollection.find({ email }).toArray();
       res.send(result);
@@ -445,7 +446,7 @@ async function run() {
     });
 
     // Payment intent
-    app.post("/create-payment-intent", async (req, res) => {
+    app.post("/create-payment-intent", verifyToken, async (req, res) => {
       const { price } = req.body;
 
       const amount = parseInt(price * 100);
