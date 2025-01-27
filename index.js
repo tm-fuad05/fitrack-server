@@ -8,7 +8,11 @@ const port = process.env.PORT || 5000;
 var jwt = require("jsonwebtoken");
 
 app.use(express.static("public"));
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://fit-rack-88a09.web.app", "http://localhost:5173"],
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dmsil.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -317,6 +321,7 @@ async function run() {
 
     app.get("/trainers/:trainerName", async (req, res) => {
       const trainerName = decodeURIComponent(req.params.trainerName);
+
       const result = await trainerCollection.findOne({
         fullName: trainerName,
       });
