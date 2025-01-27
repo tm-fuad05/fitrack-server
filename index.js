@@ -322,13 +322,27 @@ async function run() {
       });
       res.send(result);
     });
-    app.patch("/trainers/:id", verifyToken, async (req, res) => {
+    // Manage Slots : (Delete)
+    app.patch("/trainers/deleteSlot/:id", verifyToken, async (req, res) => {
       const managedSlots = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedSlots = {
         $set: {
           availableDays: managedSlots.availableDays,
+        },
+      };
+      const result = await trainerCollection.updateOne(filter, updatedSlots);
+      res.send(result);
+    });
+    // Add Slot
+    app.patch("/trainers/addSlot/:id", verifyToken, async (req, res) => {
+      const addedSlots = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedSlots = {
+        $set: {
+          availableDays: addedSlots.availableDays,
         },
       };
       const result = await trainerCollection.updateOne(filter, updatedSlots);
