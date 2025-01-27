@@ -273,9 +273,6 @@ async function run() {
         $inc: {
           votes: 1,
         },
-        $set: {
-          isLike: true,
-        },
       };
       const result = await communityCollection.updateOne(
         filter,
@@ -290,9 +287,6 @@ async function run() {
       const updatedVoteNumber = {
         $inc: {
           votes: -1,
-        },
-        $set: {
-          isDisike: true,
         },
       };
       const result = await communityCollection.updateOne(
@@ -397,7 +391,7 @@ async function run() {
       const result = await appliedTrainerCollection.find().toArray();
       res.send(result);
     });
-    app.get("/applied-as-trainer/:id", verifyToken, async (req, res) => {
+    app.get("/applied-as-trainer/:id", async (req, res) => {
       const id = req.params.id;
       const result = await appliedTrainerCollection.findOne({
         _id: new ObjectId(id),
