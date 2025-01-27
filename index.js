@@ -316,38 +316,49 @@ async function run() {
     });
 
     app.get("/trainers/:trainerName", async (req, res) => {
-      const trainerName = req.params.trainerName;
+      const trainerName = decodeURIComponent(req.params.trainerName);
       const result = await trainerCollection.findOne({
         fullName: trainerName,
       });
       res.send(result);
     });
+
     // Manage Slots : (Delete)
-    app.patch("/trainers/deleteSlot/:id", verifyToken, async (req, res) => {
-      const managedSlots = req.body;
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedSlots = {
-        $set: {
-          availableDays: managedSlots.availableDays,
-        },
-      };
-      const result = await trainerCollection.updateOne(filter, updatedSlots);
-      res.send(result);
-    });
+    app.patch(
+      "/trainers/deleteSlot/:id",
+      verifyToken,
+      VerifyTrainer,
+      async (req, res) => {
+        const managedSlots = req.body;
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedSlots = {
+          $set: {
+            availableDays: managedSlots.availableDays,
+          },
+        };
+        const result = await trainerCollection.updateOne(filter, updatedSlots);
+        res.send(result);
+      }
+    );
     // Add Slot
-    app.patch("/trainers/addSlot/:id", verifyToken, async (req, res) => {
-      const addedSlots = req.body;
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedSlots = {
-        $set: {
-          availableDays: addedSlots.availableDays,
-        },
-      };
-      const result = await trainerCollection.updateOne(filter, updatedSlots);
-      res.send(result);
-    });
+    app.patch(
+      "/trainers/addSlot/:id",
+      verifyToken,
+      VerifyTrainer,
+      async (req, res) => {
+        const addedSlots = req.body;
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedSlots = {
+          $set: {
+            availableDays: addedSlots.availableDays,
+          },
+        };
+        const result = await trainerCollection.updateOne(filter, updatedSlots);
+        res.send(result);
+      }
+    );
 
     // Payments---------------------------
     app.post("/payments", verifyToken, async (req, res) => {
