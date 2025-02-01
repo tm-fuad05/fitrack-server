@@ -39,7 +39,7 @@ async function run() {
     // MiddleWares
     const verifyToken = (req, res, next) => {
       if (!req.headers.authorization) {
-        return res.status(401).send({ message: "Unauthorized access!" });
+        return res.status(401).json({ message: "Unauthorized access!" });
       }
       const token = req.headers.authorization.split(" ")[1];
       jwt.verify(
@@ -47,7 +47,7 @@ async function run() {
         process.env.ACCESS_TOKEN_SECRET,
         function (err, decoded) {
           if (err) {
-            return res.status(401).send({ message: "Unauthorized access!" });
+            return res.status(401).json({ message: "Unauthorized access!" });
           }
           req.decoded = decoded;
           next();
@@ -60,7 +60,7 @@ async function run() {
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user?.role === "admin";
       if (!isAdmin) {
-        return res.status(403).send({ message: "Forbidden access" });
+        return res.status(403).json({ message: "Forbidden access" });
       }
       next();
     };
@@ -70,7 +70,7 @@ async function run() {
       const user = await userCollection.findOne({ email: email });
       const isTrainer = user?.role === "trainer";
       if (!isTrainer) {
-        return res.status(403).send({ message: "Forbidden access" });
+        return res.status(403).json({ message: "Forbidden access" });
       }
       next();
     };
@@ -82,25 +82,41 @@ async function run() {
       const isTrainer = user?.role === "trainer";
       const isAdmin = user?.role === "admin";
       if (!isTrainer && !isAdmin) {
-        return res.status(403).send({ message: "Forbidden access" });
+        return res.status(403).json({ message: "Forbidden access" });
       }
       next();
     };
 
-    // JWT API --------------------------
+    // JWT API --------------------------(Done✅)
     app.post("/jwt", async (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "24h",
-      });
-      res.send({ token });
+      try {
+        const user = req.body;
+        if (!user?.email) {
+          return res
+            .status(400)
+            .json({ success: false, message: "invalid email" });
+        }
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: "24h",
+        });
+
+        return res.status(200).json({
+          success: true,
+          token,
+        });
+      } catch (error) {
+        return res.status(500).json({
+          message:
+            "Server was unable to fulfill a request due to an unexpected condition!",
+        });
+      }
     });
 
     // Admin Check ---------------------
     app.get("/user/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
-        return res.status(403).send({ message: "Forbidden access!" });
+        return res.status(403).json({ message: "Forbidden access!" });
       }
 
       const user = await userCollection.findOne({ email: email });
@@ -108,7 +124,7 @@ async function run() {
       if (user) {
         isAdmin = user?.role === "admin";
       }
-      res.send({ isAdmin });
+      res.json({ isAdmin });
     });
 
     // Trainer check---------------
@@ -116,7 +132,7 @@ async function run() {
     app.get("/user/trainer/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
-        return res.status(403).send({ message: "Forbidden access!" });
+        return res.status(403).json({ message: "Forbidden access!" });
       }
 
       const user = await userCollection.findOne({ email: email });
@@ -124,108 +140,214 @@ async function run() {
       if (user) {
         isTrainer = user?.role === "trainer";
       }
-      res.send({ isTrainer });
+      res.json({ isTrainer });
     });
 
-    // User API---------------------------------
+    // User API---------------------------------(Done✅)
     app.post("/users", async (req, res) => {
-      const user = req.body;
-      // Except registration
-      const query = { email: user.email };
-      const axsisting = await userCollection.findOne(query);
-      if (axsisting) {
-        return res.send({ message: "User already axist" });
-      } else {
-        const result = await userCollection.insertOne(user);
-        res.send(result);
+      try {
+        const user = req.body;
+
+        if (!user?.email) {
+          return res
+            .status(400)
+            .json({ success: false, message: "Invalid email" });
+        }
+        // Except registration
+        const query = { email: user?.email };
+        const existing = await userCollection.findOne(query);
+        if (existing) {
+          return res
+            .status(409)
+            .json({ success: false, message: "User already exists" });
+        } else {
+          const result = await userCollection.insertOne(user);
+
+          return res.status(201).json({
+            success: true,
+            data: result,
+          });
+        }
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message:
+            "Server was unable to fulfill a request due to an unexpected condition!",
+        });
       }
     });
 
     app.get("/users", verifyToken, async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
-    });
-    // Update User Info : (Name)
-    app.patch("/users/:id", verifyToken, async (req, res) => {
-      const userId = req.params.id;
-      const updatedUserInfo = req.body;
-      const filter = { _id: new ObjectId(userId) };
-      const updatedProfile = {
-        $set: {
-          name: updatedUserInfo.name,
-        },
-      };
-      const result = await userCollection.updateOne(filter, updatedProfile);
-      res.send(result);
+      try {
+        const result = await userCollection.find().toArray();
+        return res.status(200).json({ success: true, data: result });
+      } catch (error) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Users not found!" });
+      }
     });
 
-    //  Make user admin------------------
+    // Update User Info : (Name)-------------------(Done✅)
+    app.patch("/users/:id", verifyToken, async (req, res) => {
+      try {
+        const userId = req.params.id;
+        const updatedUserInfo = req.body;
+
+        if (!updatedUserInfo?.name) {
+          return res
+            .status(404)
+            .json({ success: false, message: "UserInfo not found." });
+        }
+        const filter = { _id: new ObjectId(userId) };
+        const updatedProfile = {
+          $set: {
+            name: updatedUserInfo.name,
+          },
+        };
+
+        const existingUser = await userCollection.findOne(filter);
+        if (!existingUser) {
+          return res
+            .status(404)
+            .json({ success: false, message: "User not found." });
+        }
+
+        const result = await userCollection.updateOne(filter, updatedProfile);
+        return res.status(200).json({ success: true, result });
+      } catch (error) {
+        console.error(error);
+        res.status(400).json({ success: false, message: "Bad request." });
+      }
+    });
+
+    //  Make user admin------------------(Done✅)
     app.patch(
       "/users/make-admin/:id",
       verifyToken,
       VerifyAdmin,
       async (req, res) => {
-        const userId = req.params.id;
-        const filter = { _id: new ObjectId(userId) };
-        const updatedRole = {
-          $set: {
-            role: "admin",
-          },
-        };
-        const result = await userCollection.updateOne(filter, updatedRole);
-        res.send(result);
+        try {
+          const userId = req.params.id;
+          const filter = { _id: new ObjectId(userId) };
+          const updatedRole = {
+            $set: {
+              role: "admin",
+            },
+          };
+
+          const existingUser = await userCollection.findOne(filter);
+          if (!existingUser) {
+            res
+              .status(404)
+              .json({ success: false, message: "User not found." });
+          }
+
+          const result = await userCollection.updateOne(filter, updatedRole);
+          res.status(200).json({ success: true, data: result });
+        } catch (error) {
+          console.error(error);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error." });
+        }
       }
     );
 
-    // Make user Trainer ----------------
+    // Make user Trainer ----------------(Done✅)
     app.patch(
       "/users/make-trainer/:id",
       verifyToken,
       VerifyAdmin,
       async (req, res) => {
-        const userId = req.params.id;
-        const filter = { _id: new ObjectId(userId) };
-        const updatedRole = {
-          $set: {
-            role: "trainer",
-          },
-        };
-        const result = await userCollection.updateOne(filter, updatedRole);
-        res.send(result);
+        try {
+          const userId = req.params.id;
+          const filter = { _id: new ObjectId(userId) };
+          const updatedRole = {
+            $set: {
+              role: "trainer",
+            },
+          };
+
+          const existingUser = await userCollection.findOne(filter);
+          if (!existingUser) {
+            res
+              .status(404)
+              .json({ success: false, message: "User not found." });
+          }
+
+          const result = await userCollection.updateOne(filter, updatedRole);
+          res.status(200).json({ success: true, data: result });
+        } catch (error) {
+          console.error(error);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error." });
+        }
       }
     );
 
-    // Make Trainer Member ----------------
+    // Make Trainer Member ----------------(Done✅)
     app.patch(
       "/users/make-member/:id",
       verifyToken,
       VerifyAdmin,
       async (req, res) => {
-        const userId = req.params.id;
-        const filter = { _id: new ObjectId(userId) };
-        const updatedRole = {
-          $set: {
-            role: "member",
-          },
-        };
-        const result = await userCollection.updateOne(filter, updatedRole);
-        res.send(result);
+        try {
+          const userId = req.params.id;
+          const filter = { _id: new ObjectId(userId) };
+          const updatedRole = {
+            $set: {
+              role: "member",
+            },
+          };
+
+          const existingUser = await userCollection.findOne(filter);
+          if (!existingUser) {
+            res
+              .status(404)
+              .json({ success: false, message: "User not found." });
+          }
+
+          const result = await userCollection.updateOne(filter, updatedRole);
+          res.status(200).json({ success: true, data: result });
+        } catch (error) {
+          console.error(error);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal server error." });
+        }
       }
     );
-
+    //  User Delete --------------------------------(Done✅)
     app.delete("/users/:id", verifyToken, VerifyAdmin, async (req, res) => {
-      const userId = req.params.id;
-      const result = await userCollection.deleteOne({
-        _id: new ObjectId(userId),
-      });
-      res.send(result);
+      try {
+        const userId = req.params.id;
+        const query = {
+          _id: new ObjectId(userId),
+        };
+
+        const existingUser = await userCollection.findOne(query);
+        if (!existingUser) {
+          res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        const result = await userCollection.deleteOne(query);
+
+        return res.status(200).json({ success: true, data: result });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error." });
+      }
     });
 
     // All Classes API -------------------------------
     app.post("/classes", verifyToken, VerifyAdmin, async (req, res) => {
       const classInfo = req.body;
       const result = await classCollection.insertOne(classInfo);
-      res.send(result);
+      res.json(result);
     });
     app.get("/classes", async (req, res) => {
       const search = req.query?.search;
@@ -238,7 +360,7 @@ async function run() {
         };
       }
       const result = await classCollection.find(query).toArray();
-      res.send(result);
+      res.json(result);
     });
 
     // Community API -----------------------
@@ -249,12 +371,12 @@ async function run() {
       async (req, res) => {
         const forumInfo = req.body;
         const result = await communityCollection.insertOne(forumInfo);
-        res.send(result);
+        res.json(result);
       }
     );
     app.get("/community", async (req, res) => {
       const result = await communityCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
     // Recent Community
     app.get("/recent-community", async (req, res) => {
@@ -263,7 +385,7 @@ async function run() {
         .sort({ _id: -1 })
         .limit(6)
         .toArray();
-      res.send(result);
+      res.json(result);
     });
     // UpVote
     app.patch("/community/upvote/:id", verifyToken, async (req, res) => {
@@ -278,7 +400,7 @@ async function run() {
         filter,
         updatedVoteNumber
       );
-      res.send(result);
+      res.json(result);
     });
     // DownVote
     app.patch("/community/downvote/:id", verifyToken, async (req, res) => {
@@ -293,28 +415,28 @@ async function run() {
         filter,
         updatedVoteNumber
       );
-      res.send(result);
+      res.json(result);
     });
 
     // All Trainers Api -------------------------------
     app.post("/trainers", verifyToken, VerifyAdmin, async (req, res) => {
       const trainer = req.body;
       const result = await trainerCollection.insertOne(trainer);
-      res.send(result);
+      res.json(result);
     });
 
     app.get("/trainers", async (req, res) => {
       const result = await trainerCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
 
     app.get("/trainers/:trainerName", async (req, res) => {
-      const trainerName = decodeURIComponent(req.params.trainerName);
+      const trainerName = req.params.trainerName;
 
       const result = await trainerCollection.findOne({
         fullName: trainerName,
       });
-      res.send(result);
+      res.json(result);
     });
 
     // Manage Slots : (Delete)
@@ -332,7 +454,7 @@ async function run() {
           },
         };
         const result = await trainerCollection.updateOne(filter, updatedSlots);
-        res.send(result);
+        res.json(result);
       }
     );
     // Add Slot
@@ -350,7 +472,7 @@ async function run() {
           },
         };
         const result = await trainerCollection.updateOne(filter, updatedSlots);
-        res.send(result);
+        res.json(result);
       }
     );
 
@@ -358,12 +480,12 @@ async function run() {
     app.post("/payments", verifyToken, async (req, res) => {
       const paymentInfo = req.body;
       const result = await paymentCollection.insertOne(paymentInfo);
-      res.send(result);
+      res.json(result);
     });
 
     app.get("/payments", verifyToken, async (req, res) => {
       const result = await paymentCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
     // Recent 6 transaction
     app.get("/recent-payments", verifyToken, VerifyAdmin, async (req, res) => {
@@ -372,24 +494,24 @@ async function run() {
         .sort({ _id: -1 })
         .limit(6)
         .toArray();
-      res.send(result);
+      res.json(result);
     });
 
     app.get("/payments/user", verifyToken, async (req, res) => {
       const email = req.query.email;
       const result = await paymentCollection.find({ email }).toArray();
-      res.send(result);
+      res.json(result);
     });
 
     // Applied Trainer -------------------------
     app.post("/applied-as-trainer", verifyToken, async (req, res) => {
       const trainerInfo = req.body;
       const result = await appliedTrainerCollection.insertOne(trainerInfo);
-      res.send(result);
+      res.json(result);
     });
     app.get("/applied-as-trainer", verifyToken, async (req, res) => {
       const result = await appliedTrainerCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
     app.get("/applied-as-trainer/:id", async (req, res) => {
       const id = req.params.id;
@@ -397,7 +519,7 @@ async function run() {
         _id: new ObjectId(id),
       });
 
-      res.send(result);
+      res.json(result);
     });
     app.patch(
       "/applied-as-trainer/:id",
@@ -415,7 +537,7 @@ async function run() {
           filter,
           updateStatus
         );
-        res.send(result);
+        res.json(result);
       }
     );
     app.delete("/applied-as-trainer/:id", verifyToken, async (req, res) => {
@@ -423,7 +545,7 @@ async function run() {
       const result = await appliedTrainerCollection.deleteOne({
         _id: new ObjectId(id),
       });
-      res.send(result);
+      res.json(result);
     });
 
     // Rejection Feedback-----------------------
@@ -434,34 +556,34 @@ async function run() {
       async (req, res) => {
         const feedback = req.body;
         const result = await rejectionFeedbackCollection.insertOne(feedback);
-        res.send(result);
+        res.json(result);
       }
     );
     app.get("/rejection-feedback", verifyToken, async (req, res) => {
       const result = await rejectionFeedbackCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
 
     // Newsletter Api-----------------------------
     app.post("/newsletter", async (req, res) => {
       const newsletterInfo = req.body;
       const result = await newsletterCollection.insertOne(newsletterInfo);
-      res.send(result);
+      res.json(result);
     });
     app.get("/newsletter", verifyToken, VerifyAdmin, async (req, res) => {
       const result = await newsletterCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
 
     // Reviews Api----------------------------
     app.post("/reviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
-      res.send(result);
+      res.json(result);
     });
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
-      res.send(result);
+      res.json(result);
     });
 
     // Payment intent
@@ -476,7 +598,7 @@ async function run() {
         payment_method_types: ["card"],
       });
 
-      res.send({
+      res.json({
         clientSecret: paymentIntent.client_secret,
       });
     });
@@ -490,7 +612,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.json("Hello World!");
 });
 
 app.listen(port, () => {
