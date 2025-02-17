@@ -652,7 +652,16 @@ async function run() {
     // All trainers get ---------------------------
     app.get("/trainers", async (req, res) => {
       try {
-        const result = await trainerCollection.find().toArray();
+        const sort = req.query?.sort;
+        let sortQuery = {};
+
+        if (sort === "age") {
+          sortQuery = { age: 1 };
+        }
+        if (sort === "trainer experience") {
+          sortQuery = { yearsOfExperience: -1 };
+        }
+        const result = await trainerCollection.find().sort(sortQuery).toArray();
         return res.status(200).json(result);
       } catch (error) {
         console.error(error);
