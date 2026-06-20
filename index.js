@@ -51,7 +51,7 @@ async function run() {
           }
           req.decoded = decoded;
           next();
-        }
+        },
       );
     };
     // VerifyAdmin;
@@ -308,7 +308,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: "Internal server error." });
         }
-      }
+      },
     );
 
     // Make user Trainer ----------------
@@ -347,7 +347,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: "Internal server error." });
         }
-      }
+      },
     );
 
     // Make Trainer Member ----------------
@@ -386,7 +386,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: "Internal server error." });
         }
-      }
+      },
     );
     //  User Delete --------------------------------
     app.delete("/users/:id", verifyToken, VerifyAdmin, async (req, res) => {
@@ -496,13 +496,16 @@ async function run() {
             .status(500)
             .json({ success: false, message: "Internal server error." });
         }
-      }
+      },
     );
 
     // Community get-----------------------
     app.get("/community", async (req, res) => {
       try {
-        const result = await communityCollection.find().toArray();
+        const result = await communityCollection
+          .find()
+          .sort({ date: -1 })
+          .toArray();
         return res.status(200).json(result);
       } catch (error) {
         console.error(error);
@@ -516,7 +519,7 @@ async function run() {
       try {
         const result = await communityCollection
           .find()
-          .sort({ _id: -1 })
+          .sort({ date: -1 })
           .limit(6)
           .toArray();
         return res.status(200).json(result);
@@ -532,6 +535,7 @@ async function run() {
     app.patch("/community/upvote/:id", verifyToken, async (req, res) => {
       try {
         const id = req.params.id;
+        const userEmail = req.decoded?.email;
 
         if (!ObjectId.isValid(id)) {
           return res
@@ -540,12 +544,6 @@ async function run() {
         }
 
         const filter = { _id: new ObjectId(id) };
-        const updatedVoteNumber = {
-          $inc: {
-            votes: 1,
-          },
-        };
-
         const existingForum = await communityCollection.findOne(filter);
         if (!existingForum) {
           return res
@@ -553,58 +551,28 @@ async function run() {
             .json({ success: false, message: "Forum not found." });
         }
 
-        const result = await communityCollection.updateOne(
-          filter,
-          updatedVoteNumber
-        );
+        const isAlreadyUpvoted = existingForum.votedBy?.includes(userEmail);
+
+        let updateDoc = {};
+
+        if (isAlreadyUpvoted) {
+          updateDoc = {
+            $pull: { votedBy: userEmail },
+          };
+        } else {
+          updateDoc = {
+            $addToSet: { votedBy: userEmail },
+          };
+        }
+
+        const result = await communityCollection.updateOne(filter, updateDoc);
         if (result.modifiedCount > 0) {
           return res.status(200).json({ success: true });
         }
+        console.log(result.modifiedCount);
         return res
           .status(200)
           .json({ success: false, message: "No changess were made." });
-      } catch (error) {
-        console.error(error);
-        return res
-          .status(500)
-          .json({ success: false, message: "Internal server error." });
-      }
-    });
-    // DownVote---------------------
-    app.patch("/community/downvote/:id", verifyToken, async (req, res) => {
-      try {
-        const id = req.params.id;
-
-        if (!ObjectId.isValid(id)) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Invalid ID format." });
-        }
-
-        const filter = { _id: new ObjectId(id) };
-        const updatedVoteNumber = {
-          $inc: {
-            votes: -1,
-          },
-        };
-
-        const exisitingForum = await communityCollection.findOne(filter);
-        if (!exisitingForum) {
-          return res
-            .status(404)
-            .json({ success: false, message: "Forum not found." });
-        }
-
-        const result = await communityCollection.updateOne(
-          filter,
-          updatedVoteNumber
-        );
-        if (result.modifiedCount > 0) {
-          return res.status(200).json({ success: true });
-        }
-        return res
-          .status(200)
-          .json({ success: false, message: "No changes were made." });
       } catch (error) {
         console.error(error);
         return res
@@ -735,7 +703,7 @@ async function run() {
 
           const result = await trainerCollection.updateOne(
             filter,
-            updatedSlots
+            updatedSlots,
           );
           if (result.modifiedCount > 0) {
             return res.status(200).json({ success: true });
@@ -749,7 +717,7 @@ async function run() {
             .status(500)
             .json({ success: true, message: "Internal server error." });
         }
-      }
+      },
     );
 
     // Add Slot----------------------------------
@@ -784,7 +752,7 @@ async function run() {
           }
           const result = await trainerCollection.updateOne(
             filter,
-            updatedSlots
+            updatedSlots,
           );
           if (result.modifiedCount > 0) {
             return res.status(200).json({ success: true });
@@ -798,7 +766,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: " Internal server error." });
         }
-      }
+      },
     );
 
     // Payments---------------------------
@@ -965,9 +933,8 @@ async function run() {
             },
           };
 
-          const existingApplicant = await appliedTrainerCollection.findOne(
-            filter
-          );
+          const existingApplicant =
+            await appliedTrainerCollection.findOne(filter);
 
           if (!existingApplicant) {
             return res
@@ -977,7 +944,7 @@ async function run() {
 
           const result = await appliedTrainerCollection.updateOne(
             filter,
-            updateStatus
+            updateStatus,
           );
           if (result.modifiedCount > 0) {
             return res.status(200).json({ success: true });
@@ -991,7 +958,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: "internal server error." });
         }
-      }
+      },
     );
     //  Delete applicant -------------------------------
     app.delete("/applied-as-trainer/:id", verifyToken, async (req, res) => {
@@ -1054,7 +1021,7 @@ async function run() {
             .status(500)
             .json({ success: false, message: " Internal server error" });
         }
-      }
+      },
     );
 
     // ------------------
@@ -1164,7 +1131,7 @@ async function run() {
     });
 
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB"
+      "Pinged your deployment. You successfully connected to MongoDB",
     );
   } finally {
   }
