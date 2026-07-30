@@ -671,29 +671,29 @@ async function run() {
       }
     });
 
-    app.delete(
-      "/trainers/:email",
-      verifyToken,
-      VerifyAdmin,
-      async (req, res) => {
-        try {
-          const email = req.params.email;
-          const result = await trainerCollection.deleteOne(email);
-          if (result.deletedCount > 0) {
-            return res.status(200).json({ success: true, data: result });
-          }
-          return res.status(404).json({
-            success: false,
-            message: "Trainer not found or already deleted.",
-          });
-        } catch (error) {
-          console.error(error);
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error." });
-        }
-      },
-    );
+    // app.delete(
+    //   "/trainers/:email",
+    //   verifyToken,
+    //   VerifyAdmin,
+    //   async (req, res) => {
+    //     try {
+    //       const email = req.params.email;
+    //       const result = await trainerCollection.deleteOne(email);
+    //       if (result.deletedCount > 0) {
+    //         return res.status(200).json({ success: true, data: result });
+    //       }
+    //       return res.status(404).json({
+    //         success: false,
+    //         message: "Trainer not found or already deleted.",
+    //       });
+    //     } catch (error) {
+    //       console.error(error);
+    //       res
+    //         .status(500)
+    //         .json({ success: false, message: "Internal server error." });
+    //     }
+    //   },
+    // );
 
     // Manage Slots : (Delete)------------------------
     app.patch(
