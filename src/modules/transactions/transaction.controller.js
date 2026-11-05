@@ -1,25 +1,25 @@
-import { PaymentService } from "./payment.service.js";
+import { TransactionService } from "./transaction.service.js";
 
 // Post transaction
-async function addPayment(req, res) {
+async function addTransaction(req, res) {
   try {
-    const paymentInfo = req.body;
+    const transactionInfo = req.body;
 
-    if (!paymentInfo) {
+    if (!transactionInfo) {
       return res
         .status(400)
-        .json({ success: false, message: "Payment info required." });
+        .json({ success: false, message: "Transaction info required." });
     }
-    const result = await PaymentService.addPaymentInDB(paymentInfo);
+    const result = await TransactionService.addTransactionInDB(transactionInfo);
 
     if (result.insertedId) {
       return res
         .status(200)
-        .json({ success: true, message: "Payment successfull" });
+        .json({ success: true, message: "Transaction successfull" });
     }
     return res.status(500).json({
       success: false,
-      message: "Failed to record payment information.",
+      message: "Failed to record Transaction information.",
     });
   } catch (error) {
     console.error(error);
@@ -29,9 +29,9 @@ async function addPayment(req, res) {
   }
 }
 // Get all transaction
-async function getAllPayments(req, res) {
+async function getAllTransactions(req, res) {
   try {
-    const result = await PaymentService.getAllPaymentsFromDB();
+    const result = await TransactionService.getAllTransactionsFromDB();
 
     return res.status(200).json({ success: true, data: result });
   } catch (error) {
@@ -43,9 +43,9 @@ async function getAllPayments(req, res) {
 }
 
 // Recent 6 transaction
-async function getRecentPayments(req, res) {
+async function getRecentTransactions(req, res) {
   try {
-    const result = await PaymentService.getRecentPaymentsFromDB();
+    const result = await TransactionService.getRecentTransactionsFromDB();
     return res.status(200).json({ success: true, data: result });
   } catch (error) {
     console.error(error);
@@ -55,10 +55,11 @@ async function getRecentPayments(req, res) {
   }
 }
 // Get Specific User's transaction
-async function getSpecificUserPayment(req, res) {
+async function getSpecificUserTransaction(req, res) {
   try {
     const { email } = req.query;
-    const result = await PaymentService.getSpecificUserPaymentFromDB(email);
+    const result =
+      await TransactionService.getSpecificUserTransactionFromDB(email);
     return res.status(200).json({ success: true, data: result });
   } catch (error) {
     console.error(error);
@@ -68,9 +69,9 @@ async function getSpecificUserPayment(req, res) {
   }
 }
 
-export const PaymentController = {
-  addPayment,
-  getAllPayments,
-  getSpecificUserPayment,
-  getRecentPayments,
+export const TransactionController = {
+  addTransaction,
+  getAllTransactions,
+  getSpecificUserTransaction,
+  getRecentTransactions,
 };

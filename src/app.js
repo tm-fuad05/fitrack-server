@@ -6,7 +6,6 @@ import stripe from "stripe";
 import {
   verifyAdmin,
   verifyTrainer,
-  verifyAdminORTrainer,
 } from "./middlewares/verifyUserRole.middleware.js";
 import { AuthRouter } from "./modules/authentication/auth.route.js";
 import { UserRouter } from "./modules/users/user.route.js";
@@ -16,7 +15,7 @@ import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
 import { ClassRouter } from "./modules/classes/class.route.js";
 import { CommunityRouter } from "./modules/communities/community.route.js";
 import { RejectionFeedbackRouter } from "./modules/rejection-feedbacks/feedback.route.js";
-import { PaymentRouter } from "./modules/payments/payment.route.js";
+import { TransactionRouter } from "./modules/transactions/transaction.route.js";
 
 const app = express();
 
@@ -34,7 +33,7 @@ app.use("/api/v1/newsletters", NewsletterRouter);
 app.use("/api/v1/classes", ClassRouter);
 app.use("/api/v1/communities", CommunityRouter);
 app.use("/api/v1/rejection-feedback", RejectionFeedbackRouter);
-app.use("/api/v1/payments", PaymentRouter);
+app.use("/api/v1/transactions", TransactionRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");

@@ -31,7 +31,7 @@ const paymentQuerySchema = z.object({
   }),
 });
 
-export const PaymentValidation = {
+export const TransactionValidation = {
   createPaymentSchema,
   paymentQuerySchema,
 };
