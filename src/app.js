@@ -14,6 +14,7 @@ import { verifyToken } from "./middlewares/verifyToken.middleware.js";
 import { ReviewRouter } from "./modules/reviews/review.route.js";
 import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
 import { ClassRouter } from "./modules/classes/class.route.js";
+import { CommunityRouter } from "./modules/communities/community.route.js";
 
 const app = express();
 
@@ -29,123 +30,15 @@ app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/reviews", ReviewRouter);
 app.use("/api/v1/newsletters", NewsletterRouter);
 app.use("/api/v1/classes", ClassRouter);
+app.use("/api/v1/communities", CommunityRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
 
-const communityCollection = database.collection("community");
 const trainerCollection = database.collection("trainers");
 const appliedTrainerCollection = database.collection("applied trainers");
 const paymentCollection = database.collection("payments");
 const rejectionFeedbackCollection = database.collection("Rejection Feedback");
-
-// Community API -----------------------
-app.post("/community", verifyToken, verifyAdminORTrainer, async (req, res) => {
-  try {
-    const forumInfo = req.body;
-
-    if (!forumInfo || Object.keys(forumInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Forum info is required." });
-    }
-
-    const result = await communityCollection.insertOne(forumInfo);
-    if (result.insertedId) {
-      return res.status(201).json({ success: true });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to post forum." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Community get-----------------------
-app.get("/community", async (req, res) => {
-  try {
-    const result = await communityCollection
-      .find()
-      .sort({ date: -1 })
-      .toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// Recent Community---------------------
-app.get("/recent-community", async (req, res) => {
-  try {
-    const result = await communityCollection
-      .find()
-      .sort({ date: -1 })
-      .limit(6)
-      .toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// UpVote---------------------
-app.patch("/community/upvote/:id", verifyToken, async (req, res) => {
-  try {
-    const id = req.params.id;
-    const userEmail = req.decoded?.email;
-
-    if (!ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid ID format." });
-    }
-
-    const filter = { _id: new ObjectId(id) };
-    const existingForum = await communityCollection.findOne(filter);
-    if (!existingForum) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Forum not found." });
-    }
-
-    const isAlreadyUpvoted = existingForum.votedBy?.includes(userEmail);
-
-    let updateDoc = {};
-
-    if (isAlreadyUpvoted) {
-      updateDoc = {
-        $pull: { votedBy: userEmail },
-      };
-    } else {
-      updateDoc = {
-        $addToSet: { votedBy: userEmail },
-      };
-    }
-
-    const result = await communityCollection.updateOne(filter, updateDoc);
-    if (result.modifiedCount > 0) {
-      return res.status(200).json({ success: true });
-    }
-    console.log(result.modifiedCount);
-    return res
-      .status(200)
-      .json({ success: false, message: "No changess were made." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
 
 // All Trainers Api -------------------------------
 app.post("/trainers", verifyToken, verifyAdmin, async (req, res) => {

@@ -6,7 +6,7 @@ const createUserSchema = z.object({
       .string({ error: "Name is required" })
       .min("3", { error: "Name must be at least 3 characters" })
       .trim(),
-    email: z.email({ error: "Invalid email address" }).trim().toLowerCase(),
+    email: z.email().trim().toLowerCase(),
     role: z
       .enum(["ADMIN", "TRAINER", "MEMBER"], {
         error: "Role can be ADMIN, TRAINER or MEMBER",
@@ -15,18 +15,14 @@ const createUserSchema = z.object({
   }),
 });
 
-const updateUserSchema = createUserSchema
+const updateUserSchema = createUserSchema.shape.body
   .omit({
-    body: {
-      role: true,
-    },
+    role: true,
   })
   .partial();
 
-const updateUserRoleSchema = createUserSchema.pick({
-  body: {
-    role: true,
-  },
+const updateUserRoleSchema = createUserSchema.shape.body.pick({
+  role: true,
 });
 
 // export type createUserSchemaType =z.infer<typeof createUserSchema>

@@ -7,13 +7,15 @@ import { verifyToken } from "../../middlewares/verifyToken.middleware.js";
 
 const router = express.Router();
 
-router.get("/", verifyAdmin, UserController.getAllUsers);
+router.get("/", verifyToken, verifyAdmin, UserController.getAllUsers);
+
 router.post(
   "/",
   validateRequest(UserValidation.createUserSchema),
   UserController.addUser,
 );
-router.get("/:id", verifyAdmin, UserController.getUserById);
+router.get("/:id", verifyToken, verifyAdmin, UserController.getUserById);
+
 router.get(
   "/check-user-role/:email",
   verifyAdmin,
