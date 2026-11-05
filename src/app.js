@@ -15,6 +15,7 @@ import { ReviewRouter } from "./modules/reviews/review.route.js";
 import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
 import { ClassRouter } from "./modules/classes/class.route.js";
 import { CommunityRouter } from "./modules/communities/community.route.js";
+import { RejectionFeedbackRouter } from "./modules/rejection-feedbacks/feedback.route.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/v1/reviews", ReviewRouter);
 app.use("/api/v1/newsletters", NewsletterRouter);
 app.use("/api/v1/classes", ClassRouter);
 app.use("/api/v1/communities", CommunityRouter);
+app.use("/api/v1/rejection-feedback", RejectionFeedbackRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
@@ -38,7 +40,6 @@ const database = client.db("FitRackDB");
 const trainerCollection = database.collection("trainers");
 const appliedTrainerCollection = database.collection("applied trainers");
 const paymentCollection = database.collection("payments");
-const rejectionFeedbackCollection = database.collection("Rejection Feedback");
 
 // All Trainers Api -------------------------------
 app.post("/trainers", verifyToken, verifyAdmin, async (req, res) => {
@@ -459,45 +460,6 @@ app.delete("/applied-as-trainer/:id", verifyToken, async (req, res) => {
       success: false,
       message: "Applicant not found or already deleted.",
     });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Rejection Feedback-----------------------
-app.post("/rejection-feedback", verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const feedback = req.body;
-
-    if (!feedback) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Feedback not found." });
-    }
-
-    const result = await rejectionFeedbackCollection.insertOne(feedback);
-    if (result.insertedId) {
-      return res.status(200).json({ success: true });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: " Internal server error" });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: " Internal server error" });
-  }
-});
-
-// ------------------
-app.get("/rejection-feedback", verifyToken, async (req, res) => {
-  try {
-    const result = await rejectionFeedbackCollection.find().toArray();
-    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
     return res
