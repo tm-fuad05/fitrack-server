@@ -16,6 +16,7 @@ import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
 import { ClassRouter } from "./modules/classes/class.route.js";
 import { CommunityRouter } from "./modules/communities/community.route.js";
 import { RejectionFeedbackRouter } from "./modules/rejection-feedbacks/feedback.route.js";
+import { PaymentRouter } from "./modules/payments/payment.route.js";
 
 const app = express();
 
@@ -33,13 +34,13 @@ app.use("/api/v1/newsletters", NewsletterRouter);
 app.use("/api/v1/classes", ClassRouter);
 app.use("/api/v1/communities", CommunityRouter);
 app.use("/api/v1/rejection-feedback", RejectionFeedbackRouter);
+app.use("/api/v1/payments", PaymentRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
 
 const trainerCollection = database.collection("trainers");
 const appliedTrainerCollection = database.collection("applied trainers");
-const paymentCollection = database.collection("payments");
 
 // All Trainers Api -------------------------------
 app.post("/trainers", verifyToken, verifyAdmin, async (req, res) => {
@@ -246,74 +247,6 @@ app.patch(
     }
   },
 );
-
-// Payments---------------------------
-app.post("/payments", verifyToken, async (req, res) => {
-  try {
-    const paymentInfo = req.body;
-
-    if (!paymentInfo) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Payment info required." });
-    }
-    const result = await paymentCollection.insertOne(paymentInfo);
-    if (result.insertedId) {
-      return res.status(200).json({ success: true });
-    }
-    return res.status(500).json({
-      success: false,
-      message: "Failed to record payment information.",
-    });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// Payments get------------
-app.get("/payments", verifyToken, async (req, res) => {
-  try {
-    const result = await paymentCollection.find().toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Recent 6 transaction---------------------------
-app.get("/recent-payments", verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const result = await paymentCollection
-      .find()
-      .sort({ _id: -1 })
-      .limit(6)
-      .toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// ------------------------
-app.get("/payments/user", verifyToken, async (req, res) => {
-  try {
-    const email = req.query.email;
-    const result = await paymentCollection.find({ email }).toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
 
 // Applied Trainer -------------------------
 app.post("/applied-as-trainer", verifyToken, async (req, res) => {

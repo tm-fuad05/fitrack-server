@@ -50,7 +50,7 @@ async function getAllRejectionFeedbacks(req, res) {
 // Get specific feedback
 async function getRejectionFeedbackByEmail(req, res) {
   try {
-    const { email } = req.params;
+    const { email } = req.query;
     const result =
       await RejectionFeedbackService.getRejectionFeedbackByEmailFromDB(email);
     return res.status(200).json({ success: false, data: result });

@@ -21,10 +21,10 @@ router.post(
   RejectionFeedbackController.addRejectionFeedback,
 );
 router.get(
-  "/:email",
+  "/user",
   verifyToken,
   verifyAdmin,
-  validateRequest(RejectionFeedbackValidation.rejectionFeedbackParamsSchema),
+  validateRequest(RejectionFeedbackValidation.rejectionFeedbackQuerySchema),
   RejectionFeedbackController.getRejectionFeedbackByEmail,
 );
 

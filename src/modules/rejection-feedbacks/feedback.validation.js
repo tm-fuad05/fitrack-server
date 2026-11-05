@@ -10,13 +10,13 @@ const createRejectionFeedbackSchema = z.object({
   }),
 });
 
-const rejectionFeedbackParamsSchema = z.object({
-  params: z.object({
+const rejectionFeedbackQuerySchema = z.object({
+  query: z.object({
     email: z.email().toLowerCase().trim(),
   }),
 });
 
 export const RejectionFeedbackValidation = {
   createRejectionFeedbackSchema,
-  rejectionFeedbackParamsSchema,
+  rejectionFeedbackQuerySchema,
 };
