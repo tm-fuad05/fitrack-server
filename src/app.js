@@ -1,13 +1,18 @@
-import { client } from "./config/dbConnect";
+import { client } from "./config/dbConnect.js";
 
 import express from "express";
 import cors from "cors";
+import stripe from "stripe";
+import {
+  verifyAdmin,
+  verifyTrainer,
+  verifyAdminORTrainer,
+} from "./middlewares/verifyUserRole.middleware.js";
+import { AuthRouter } from "./modules/authentication/auth.route.js";
+import { UserRouter } from "./modules/users/user.route.js";
+import { verifyToken } from "./middlewares/verifyToken.middleware.js";
 
-export const app = express();
-const stripe = require("stripe")(process.env.STRIPE_SEC_KEY);
-const port = process.env.PORT || 5000;
-var jwt = require("jsonwebtoken");
-const { AuthRouter } = require("./modules/authentication/auth.route");
+const app = express();
 
 app.use(
   cors({
@@ -18,10 +23,10 @@ app.use(express.json());
 
 // Auth
 app.use("/api/v1/auth", AuthRouter);
-app.use("/api/v1/users");
+app.use("/api/v1/users", UserRouter);
+
 // Database & Collection
 const database = client.db("FitRackDB");
-const userCollection = database.collection("users");
 const reviewCollection = database.collection("reviews");
 const communityCollection = database.collection("community");
 const trainerCollection = database.collection("trainers");
@@ -32,7 +37,7 @@ const rejectionFeedbackCollection = database.collection("Rejection Feedback");
 const newsletterCollection = database.collection("newsletter");
 
 // All Classes API --------------------------
-app.post("/classes", verifyToken, VerifyAdmin, async (req, res) => {
+app.post("/classes", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const classInfo = req.body;
 
@@ -58,12 +63,12 @@ app.post("/classes", verifyToken, VerifyAdmin, async (req, res) => {
 // Classes get -----------------------------
 app.get("/classes", async (req, res) => {
   try {
-    const search = req.query?.search;
+    const { search } = req.query;
     const query = {};
 
     if (search) {
       query.name = {
-        $regex: search,
+        $regex: search.trim(),
         $options: "i",
       };
     }
@@ -80,7 +85,7 @@ app.get("/classes", async (req, res) => {
 });
 
 // Community API -----------------------
-app.post("/community", verifyToken, VerifyAdminORTrainer, async (req, res) => {
+app.post("/community", verifyToken, verifyAdminORTrainer, async (req, res) => {
   try {
     const forumInfo = req.body;
 
@@ -188,7 +193,7 @@ app.patch("/community/upvote/:id", verifyToken, async (req, res) => {
 });
 
 // All Trainers Api -------------------------------
-app.post("/trainers", verifyToken, VerifyAdmin, async (req, res) => {
+app.post("/trainers", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const trainer = req.body;
 
@@ -305,7 +310,7 @@ app.get("/trainers/:trainerName", async (req, res) => {
 app.patch(
   "/trainers/deleteSlot/:id",
   verifyToken,
-  VerifyTrainer,
+  verifyTrainer,
   async (req, res) => {
     try {
       const id = req.params.id;
@@ -351,7 +356,7 @@ app.patch(
 app.patch(
   "/trainers/addSlot/:id",
   verifyToken,
-  VerifyTrainer,
+  verifyTrainer,
   async (req, res) => {
     try {
       const id = req.params.id;
@@ -432,7 +437,7 @@ app.get("/payments", verifyToken, async (req, res) => {
 });
 
 // Recent 6 transaction---------------------------
-app.get("/recent-payments", verifyToken, VerifyAdmin, async (req, res) => {
+app.get("/recent-payments", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const result = await paymentCollection
       .find()
@@ -537,7 +542,7 @@ app.get("/applied-as-trainer/:id", async (req, res) => {
 app.patch(
   "/applied-as-trainer/:id",
   verifyToken,
-  VerifyAdmin,
+  verifyAdmin,
   async (req, res) => {
     try {
       const applicantId = req.params.id;
@@ -615,7 +620,7 @@ app.delete("/applied-as-trainer/:id", verifyToken, async (req, res) => {
 });
 
 // Rejection Feedback-----------------------
-app.post("/rejection-feedback", verifyToken, VerifyAdmin, async (req, res) => {
+app.post("/rejection-feedback", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const feedback = req.body;
 
@@ -678,7 +683,7 @@ app.post("/newsletter", async (req, res) => {
 });
 
 // Newsletter get-----------------------------
-app.get("/newsletter", verifyToken, VerifyAdmin, async (req, res) => {
+app.get("/newsletter", verifyToken, verifyAdmin, async (req, res) => {
   try {
     const result = await newsletterCollection.find().toArray();
     return res.status(200).json(result);
@@ -749,3 +754,5 @@ app.post("/create-payment-intent", verifyToken, async (req, res) => {
 app.get("/", (req, res) => {
   res.json("Hello World!");
 });
+
+export default app;

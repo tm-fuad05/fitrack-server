@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
-import { client } from "../../config/dbConnect";
+import { client } from "../../config/dbConnect.js";
 
-const userCollection = client.db("FitrackDB").collection("users");
+const userCollection = client.db("FitRackDB").collection("users");
 
 async function getAllUsersfromDB() {
   const result = await userCollection.find().toArray();

@@ -1,6 +1,8 @@
 import "dotenv/config";
-import { app } from "./app";
+import "./config/dbConnect.js";
+import app from "./app.js";
+const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Fitrack server running on port ${port}`);
 });

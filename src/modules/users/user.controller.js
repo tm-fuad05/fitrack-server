@@ -1,4 +1,4 @@
-import { UserService } from "./user.service";
+import { UserService } from "./user.service.js";
 
 // Get All Users
 async function getAllUsers(req, res) {

@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 const secret = process.env.ACCESS_TOKEN_SECRET;
 
 async function login(req, res) {
