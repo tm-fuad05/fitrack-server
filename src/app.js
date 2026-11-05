@@ -11,6 +11,7 @@ import {
 import { AuthRouter } from "./modules/authentication/auth.route.js";
 import { UserRouter } from "./modules/users/user.route.js";
 import { verifyToken } from "./middlewares/verifyToken.middleware.js";
+import { ReviewRouter } from "./modules/reviews/review.route.js";
 
 const app = express();
 
@@ -24,10 +25,11 @@ app.use(express.json());
 // Auth
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", UserRouter);
+app.use("/api/v1/reviews", ReviewRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
-const reviewCollection = database.collection("reviews");
+
 const communityCollection = database.collection("community");
 const trainerCollection = database.collection("trainers");
 const classCollection = database.collection("classes");
@@ -692,45 +694,6 @@ app.get("/newsletter", verifyToken, verifyAdmin, async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Reviews Api----------------------------
-app.post("/reviews", async (req, res) => {
-  try {
-    const review = req.body;
-
-    if (!review || Object.keys(review).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Review data is required." });
-    }
-
-    const result = await reviewCollection.insertOne(review);
-    if (result.insertedId) {
-      return res.status(201).json({ success: true });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to post review." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Review showing ----------------------
-app.get("/reviews", async (req, res) => {
-  try {
-    const result = await reviewCollection.find().toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: true, message: "Internal server error." });
   }
 });
 

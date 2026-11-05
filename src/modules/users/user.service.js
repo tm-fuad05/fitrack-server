@@ -14,7 +14,8 @@ async function findUserByEmailFromDB(email) {
 }
 
 async function findUserByIdFromDB(userId) {
-  const existing = await userCollection.findOne({ _id: new ObjectId(userId) });
+  const filter = { _id: new ObjectId(userId) };
+  const existing = await userCollection.findOne(filter);
   return existing;
 }
 

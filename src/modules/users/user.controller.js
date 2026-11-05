@@ -16,6 +16,25 @@ async function getAllUsers(req, res) {
     });
   }
 }
+
+// Get Specific User
+async function getUserById(req, res) {
+  try {
+    const userId = req.params.id;
+    const result = await UserService.findUserByIdFromDB(userId);
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("GET User Error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 // Post Users
 async function addUser(req, res) {
   try {
@@ -209,6 +228,7 @@ async function checkUserRole(req, res) {
 
 export const UserController = {
   getAllUsers,
+  getUserById,
   editUserInfo,
   addUser,
   deleteUser,

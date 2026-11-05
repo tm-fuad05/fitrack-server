@@ -13,14 +13,21 @@ router.post(
   validateRequest(UserValidation.createUserSchema),
   UserController.addUser,
 );
+router.get("/:id", verifyAdmin, UserController.getUserById);
 router.get(
   "/check-user-role/:email",
   verifyAdmin,
   UserController.checkUserRole,
 );
-router.patch("/:id", verifyToken, UserController.editUserInfo);
+router.patch(
+  "/:id",
+  validateRequest(UserValidation.updateUserSchema),
+  verifyToken,
+  UserController.editUserInfo,
+);
 router.patch(
   "/change-user-role/:id",
+  validateRequest(UserValidation.updateUserRoleSchema),
   verifyAdmin,
   UserController.changeUserRole,
 );

@@ -13,7 +13,14 @@ export function validateRequest(schema) {
 
       next();
     } catch (error) {
-      next(error);
+      console.log("Validation Error:", error);
+      return res.status(500).json({
+        success: false,
+        errors: error?.issues?.map((err) => ({
+          field: err?.path[0],
+          message: err?.message,
+        })),
+      });
     }
   };
 }
