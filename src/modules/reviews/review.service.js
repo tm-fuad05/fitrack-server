@@ -1,4 +1,4 @@
-import { client } from "../../config/dbConnect";
+import { client } from "../../config/dbConnect.js";
 
 const reviewCollection = client.db("FitRackDB").collection("reviews");
 

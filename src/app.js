@@ -12,6 +12,7 @@ import { AuthRouter } from "./modules/authentication/auth.route.js";
 import { UserRouter } from "./modules/users/user.route.js";
 import { verifyToken } from "./middlewares/verifyToken.middleware.js";
 import { ReviewRouter } from "./modules/reviews/review.route.js";
+import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/reviews", ReviewRouter);
+app.use("/api/v1/newsletters", NewsletterRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
@@ -36,7 +38,6 @@ const classCollection = database.collection("classes");
 const appliedTrainerCollection = database.collection("applied trainers");
 const paymentCollection = database.collection("payments");
 const rejectionFeedbackCollection = database.collection("Rejection Feedback");
-const newsletterCollection = database.collection("newsletter");
 
 // All Classes API --------------------------
 app.post("/classes", verifyToken, verifyAdmin, async (req, res) => {
@@ -651,43 +652,6 @@ app.post("/rejection-feedback", verifyToken, verifyAdmin, async (req, res) => {
 app.get("/rejection-feedback", verifyToken, async (req, res) => {
   try {
     const result = await rejectionFeedbackCollection.find().toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Newsletter Api-----------------------------
-app.post("/newsletter", async (req, res) => {
-  try {
-    const newsletterInfo = req.body;
-    if (!newsletterInfo) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Newsletter not found." });
-    }
-    const result = await newsletterCollection.insertOne(newsletterInfo);
-    if (result.insertedId) {
-      return res.status(200).json({ success: true });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Newsletter get-----------------------------
-app.get("/newsletter", verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const result = await newsletterCollection.find().toArray();
     return res.status(200).json(result);
   } catch (error) {
     console.error(error);

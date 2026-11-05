@@ -1,4 +1,4 @@
-import { ReviewService } from "./review.service";
+import { ReviewService } from "./review.service.js";
 
 // Post review
 async function addReview(req, res) {
