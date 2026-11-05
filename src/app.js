@@ -13,6 +13,7 @@ import { UserRouter } from "./modules/users/user.route.js";
 import { verifyToken } from "./middlewares/verifyToken.middleware.js";
 import { ReviewRouter } from "./modules/reviews/review.route.js";
 import { NewsletterRouter } from "./modules/newsletters/newsletter.route.js";
+import { ClassRouter } from "./modules/classes/class.route.js";
 
 const app = express();
 
@@ -23,69 +24,20 @@ app.use(
 );
 app.use(express.json());
 
-// Auth
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/reviews", ReviewRouter);
 app.use("/api/v1/newsletters", NewsletterRouter);
+app.use("/api/v1/classes", ClassRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
 
 const communityCollection = database.collection("community");
 const trainerCollection = database.collection("trainers");
-const classCollection = database.collection("classes");
 const appliedTrainerCollection = database.collection("applied trainers");
 const paymentCollection = database.collection("payments");
 const rejectionFeedbackCollection = database.collection("Rejection Feedback");
-
-// All Classes API --------------------------
-app.post("/classes", verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const classInfo = req.body;
-
-    if (!classInfo || Object.keys(classInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Class data is required." });
-    }
-
-    const result = await classCollection.insertOne(classInfo);
-    if (result.insertedId) {
-      return res.status(201).json({ success: true });
-    }
-    return res.status(500).json({ success: false, message: "Failed to post." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-
-// Classes get -----------------------------
-app.get("/classes", async (req, res) => {
-  try {
-    const { search } = req.query;
-    const query = {};
-
-    if (search) {
-      query.name = {
-        $regex: search.trim(),
-        $options: "i",
-      };
-    }
-
-    const result = await classCollection.find(query).toArray();
-
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
 
 // Community API -----------------------
 app.post("/community", verifyToken, verifyAdminORTrainer, async (req, res) => {

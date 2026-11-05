@@ -21,14 +21,14 @@ router.get(
 );
 router.patch(
   "/:id",
-  validateRequest(UserValidation.updateUserSchema),
   verifyToken,
+  validateRequest(UserValidation.updateUserSchema),
   UserController.editUserInfo,
 );
 router.patch(
   "/change-user-role/:id",
-  validateRequest(UserValidation.updateUserRoleSchema),
   verifyAdmin,
+  validateRequest(UserValidation.updateUserRoleSchema),
   UserController.changeUserRole,
 );
 router.delete("/:id", verifyAdmin, UserController.deleteUser);

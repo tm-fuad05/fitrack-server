@@ -29,7 +29,7 @@ async function addReview(req, res) {
 
 async function getAllReviews(req, res) {
   try {
-    const result = ReviewService.getAllReviewsFromDB();
+    const result = await ReviewService.getAllReviewsFromDB();
     return res.status(200).json({
       success: true,
       data: result,

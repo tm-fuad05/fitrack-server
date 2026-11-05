@@ -9,18 +9,22 @@ export function validateRequest(schema) {
 
       if (parsed.body) req.body = parsed.body;
       if (parsed.query) req.query = parsed.query;
-      if (parsed.query) req.query = parsed.query;
+      if (parsed.params) req.params = parsed.params;
 
       next();
     } catch (error) {
-      console.log("Validation Error:", error);
-      return res.status(500).json({
-        success: false,
-        errors: error?.issues?.map((err) => ({
-          field: err?.path[0],
-          message: err?.message,
-        })),
-      });
+      if (error) {
+        console.log("Validation Error:", error);
+        return res.status(400).json({
+          success: false,
+          message: "Validation Error",
+          errors: error?.issues?.map((err) => ({
+            field: err?.path[1],
+            message: err?.message,
+          })),
+        });
+      }
+      next(error);
     }
   };
 }
