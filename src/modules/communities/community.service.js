@@ -1,43 +1,40 @@
-import { ObjectId } from "mongodb";
-import { client } from "../../config/dbConnect.js";
-
-const communityCollection = client.db("FitRackDB").collection("community");
+import { Community } from "./community.model.js";
 
 async function addCommunityInDB(payload) {
-  const result = await communityCollection.insertOne(payload);
+  const result = await Community.create(payload);
   return result;
 }
 
 async function findCommunityByIdFromDB(forumId) {
-  const filter = { _id: new ObjectId(forumId) };
-  const result = await communityCollection.findOne(filter);
+  const result = await Community.findById(forumId).select("-__v");
   return result;
 }
 
 async function getAllCommunitiesFromDB() {
-  const result = await communityCollection.find().sort({ date: -1 }).toArray();
+  const result = await Community.find()
+    .sort({ date: -1 })
+    .select("-__v")
+    .lean();
   return result;
 }
 
 async function getRecentCommunitiesFromDB() {
-  const result = await communityCollection
-    .find()
+  const result = await Community.find()
     .sort({ date: -1 })
     .limit(6)
-    .toArray();
+    .select("-__v")
+    .lean();
   return result;
 }
 
 async function voteCommunityInDB(forumId, userEmail) {
-  const filter = { _id: new ObjectId(forumId) };
-
   const existingForum = await findCommunityByIdFromDB(forumId);
 
-  const isAlreadyUpvoted = existingForum.votedBy?.includes(userEmail);
+  const isAlreadyVoted = existingForum.votedBy?.includes(userEmail);
 
   let updateDoc = {};
 
-  if (isAlreadyUpvoted) {
+  if (isAlreadyVoted) {
     updateDoc = {
       $pull: { votedBy: userEmail },
     };
@@ -47,7 +44,7 @@ async function voteCommunityInDB(forumId, userEmail) {
     };
   }
 
-  const result = await communityCollection.updateOne(filter, updateDoc);
+  const result = await Community.findByIdAndUpdate(forumId, updateDoc);
 
   return result;
 }

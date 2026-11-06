@@ -5,22 +5,13 @@ async function addCommunity(req, res) {
   try {
     const forumInfo = req.body;
 
-    if (!forumInfo || Object.keys(forumInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Forum info is required." });
-    }
-
     const result = await CommunityService.addCommunityInDB(forumInfo);
 
-    if (result.insertedId) {
+    if (result) {
       return res
         .status(201)
-        .json({ success: true, message: "Community posted" });
+        .json({ success: true, message: "Community posted", data: result });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to post forum." });
   } catch (error) {
     console.error(error);
     return res

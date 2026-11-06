@@ -8,7 +8,9 @@ async function addClass(req, res) {
     const result = await ClassService.addClassInDB(classInfo);
 
     if (result) {
-      return res.status(201).json({ success: true, message: "Class posted" });
+      return res
+        .status(201)
+        .json({ success: true, message: "Class posted", data: result });
     }
   } catch (error) {
     console.error(error);
