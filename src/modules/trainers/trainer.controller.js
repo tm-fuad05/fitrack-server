@@ -66,9 +66,7 @@ async function getTrainerByName(req, res) {
     const result = await TrainerService.getTrainerByNameFromDB(trainerName);
 
     if (!result) {
-      return res
-        .status(404)
-        .json({ success: false, message: "trainer not found." });
+      return res.status(404).json({ success: false, message: "Not found." });
     }
 
     return res.status(200).json({ success: true, data: result });

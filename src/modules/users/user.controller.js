@@ -22,6 +22,11 @@ async function getUserById(req, res) {
   try {
     const userId = req.params.id;
     const result = await UserService.findUserByIdFromDB(userId);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Not found." });
+    }
+
     return res.status(200).json({
       success: true,
       data: result,

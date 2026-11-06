@@ -44,7 +44,7 @@ async function voteCommunityInDB(forumId, userEmail) {
     };
   }
 
-  const result = await Community.findByIdAndUpdate(forumId, updateDoc);
+  const result = await Community.updateOne({ _id: forumId }, updateDoc);
 
   return result;
 }

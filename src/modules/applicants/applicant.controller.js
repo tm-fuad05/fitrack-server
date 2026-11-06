@@ -5,11 +5,6 @@ async function applyForTrainer(req, res) {
   try {
     const trainerInfo = req.body;
 
-    if (!trainerInfo || Object.keys(trainerInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Trainer Info not found." });
-    }
     const existingApplicant = await ApplicantService.findApplicantByEmailFromDB(
       trainerInfo?.email,
     );
@@ -22,14 +17,13 @@ async function applyForTrainer(req, res) {
     }
     const result = await ApplicantService.applyForTrainerInDB(trainerInfo);
 
-    if (result.insertedId) {
-      return res
-        .status(201)
-        .json({ success: true, message: "Application submitted" });
+    if (result) {
+      return res.status(201).json({
+        success: true,
+        message: "Application submitted",
+        data: result,
+      });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to apply." });
   } catch (error) {
     console.error(error);
     return res
@@ -54,12 +48,6 @@ async function getApplicantById(req, res) {
   try {
     const applicantId = req.params.id;
 
-    if (!ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid ID format." });
-    }
-
     const result = await ApplicantService.getApplicantByIdFromDB(applicantId);
 
     if (!result) {
@@ -78,12 +66,6 @@ async function getApplicantById(req, res) {
 async function rejectApplication(req, res) {
   try {
     const applicantId = req.params.id;
-
-    if (!ObjectId.isValid(applicantId)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid ID format." });
-    }
 
     const existingApplicant =
       await ApplicantService.getApplicantByIdFromDB(applicantId);
@@ -128,15 +110,13 @@ async function deleteApplication(req, res) {
 
     const result = await ApplicantService.deleteApplicationFromDB(applicantId);
 
-    if (result.deletedCount > 0) {
-      return res
-        .status(200)
-        .json({ success: true, message: "Application deleted successfully" });
+    if (result) {
+      return res.status(200).json({
+        success: true,
+        message: "Application deleted successfully",
+        data: result,
+      });
     }
-    return res.status(404).json({
-      success: false,
-      message: "Applicant not found or already deleted.",
-    });
   } catch (error) {
     console.error(error);
     return res

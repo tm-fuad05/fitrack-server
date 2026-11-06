@@ -1,49 +1,39 @@
-import { client } from "../../config/dbConnect.js";
-
-const applicantCollection = client.db("FitRackDB").collection("applicants");
+import { Applicant } from "./applicant.model.js";
 
 async function findApplicantByEmailFromDB(email) {
-  const result = await applicantCollection.findOne({
+  const result = await Applicant.findOne({
     email,
-  });
+  }).select("-__v");
   return result;
 }
 
 async function applyForTrainerInDB(payload) {
-  const result = await applicantCollection.insertOne(payload);
+  const result = await Applicant.create(payload);
   return result;
 }
 
 async function getAllApplicantsFromDB() {
-  const result = await applicantCollection.find().toArray();
+  const result = await Applicant.find().select("-__v").lean();
   return result;
 }
 
 async function getApplicantByIdFromDB(applicantId) {
-  const filter = {
-    _id: new ObjectId(applicantId),
-  };
-  const result = await applicantCollection.findOne(filter);
+  const result = await Applicant.findById(applicantId).select("-__v");
   return result;
 }
 
 async function rejectApplicationInDB(applicantId) {
-  const filter = { _id: new ObjectId(applicantId) };
   const updateStatus = {
     $set: {
       status: "rejected",
     },
   };
-
-  const result = await applicantCollection.updateOne(filter, updateStatus);
+  const result = await Applicant.updateOne({ _id: applicantId }, updateStatus);
   return result;
 }
 
 async function deleteApplicationFromDB(applicantId) {
-  const filter = {
-    _id: new ObjectId(applicantId),
-  };
-  const result = await applicantCollection.deleteOne(filter);
+  const result = await Applicant.findByIdAndDelete(applicantId);
   return result;
 }
 

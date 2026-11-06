@@ -8,7 +8,7 @@ async function login(req, res) {
       return res.status(400).json({ success: false, message: "Invalid email" });
     }
     const token = jwt.sign(user, secret, {
-      expiresIn: "24h",
+      expiresIn: 60 * 60 * 24,
     });
 
     return res.status(200).json({

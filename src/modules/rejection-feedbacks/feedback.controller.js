@@ -44,6 +44,11 @@ async function getRejectionFeedbackByEmail(req, res) {
     const { email } = req.query;
     const result =
       await RejectionFeedbackService.getRejectionFeedbackByEmailFromDB(email);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Not found." });
+    }
+
     return res.status(200).json({ success: false, data: result });
   } catch (error) {
     console.error(error);
