@@ -5,20 +5,13 @@ async function addReview(req, res) {
   try {
     const review = req.body;
 
-    if (!review || Object.keys(review).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Review data is required." });
-    }
-
     const result = await ReviewService.addReviewInDB(review);
 
-    if (result.insertedId) {
-      return res.status(201).json({ success: true, message: "Review posted" });
+    if (result) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Review posted", data: result });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to post review." });
   } catch (error) {
     console.error("POST REVIEW ERROR", error);
     return res

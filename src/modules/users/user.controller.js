@@ -40,13 +40,6 @@ async function addUser(req, res) {
   try {
     const user = req.body;
 
-    if (!user?.email) {
-      return res.status(400).json({
-        success: false,
-        message: "Bad request. User email is required",
-      });
-    }
-
     const existing = await UserService.findUserByEmailFromDB(user.email);
 
     if (existing) {
@@ -80,12 +73,6 @@ async function editUserInfo(req, res) {
   try {
     const userId = req.params.id;
     const updatedUserInfo = req.body;
-
-    if (!updatedUserInfo) {
-      return res
-        .status(400)
-        .json({ success: false, message: "UserInfo not found." });
-    }
 
     const existingUser = await UserService.findUserByIdFromDB(userId);
 
@@ -193,12 +180,6 @@ async function changeUserRole(req, res) {
 async function checkUserRole(req, res) {
   try {
     const { email } = req.params;
-
-    if (!email) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email is required" });
-    }
 
     if (email !== req.decoded.email) {
       return res

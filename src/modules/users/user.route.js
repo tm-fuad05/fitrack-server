@@ -19,6 +19,7 @@ router.get("/:id", verifyToken, verifyAdmin, UserController.getUserById);
 router.get(
   "/check-user-role/:email",
   verifyAdmin,
+  validateRequest(UserValidation.emailSchema),
   UserController.checkUserRole,
 );
 router.patch(

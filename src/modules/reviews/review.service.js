@@ -1,14 +1,12 @@
-import { client } from "../../config/dbConnect.js";
-
-const reviewCollection = client.db("FitRackDB").collection("reviews");
+import { Review } from "./review.model.js";
 
 async function addReviewInDB(payload) {
-  const result = await reviewCollection.insertOne(payload);
+  const result = await Review.create(payload);
   return result;
 }
 
 async function getAllReviewsFromDB() {
-  const result = await reviewCollection.find().toArray();
+  const result = await Review.find().select("-__v").lean();
   return result;
 }
 
