@@ -16,6 +16,7 @@ import { ClassRouter } from "./modules/classes/class.route.js";
 import { CommunityRouter } from "./modules/communities/community.route.js";
 import { RejectionFeedbackRouter } from "./modules/rejection-feedbacks/feedback.route.js";
 import { TransactionRouter } from "./modules/transactions/transaction.route.js";
+import { ApplicantRouter } from "./modules/applicants/applicant.route.js";
 
 const app = express();
 
@@ -34,12 +35,12 @@ app.use("/api/v1/classes", ClassRouter);
 app.use("/api/v1/communities", CommunityRouter);
 app.use("/api/v1/rejection-feedback", RejectionFeedbackRouter);
 app.use("/api/v1/transactions", TransactionRouter);
+app.use("/api/v1/applicants", ApplicantRouter);
 
 // Database & Collection
 const database = client.db("FitRackDB");
 
 const trainerCollection = database.collection("trainers");
-const appliedTrainerCollection = database.collection("applied trainers");
 
 // All Trainers Api -------------------------------
 app.post("/trainers", verifyToken, verifyAdmin, async (req, res) => {
@@ -130,30 +131,6 @@ app.get("/trainers/:trainerName", async (req, res) => {
     });
   }
 });
-
-// app.delete(
-//   "/trainers/:email",
-//   verifyToken,
-//   VerifyAdmin,
-//   async (req, res) => {
-//     try {
-//       const email = req.params.email;
-//       const result = await trainerCollection.deleteOne(email);
-//       if (result.deletedCount > 0) {
-//         return res.status(200).json({ success: true, data: result });
-//       }
-//       return res.status(404).json({
-//         success: false,
-//         message: "Trainer not found or already deleted.",
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res
-//         .status(500)
-//         .json({ success: false, message: "Internal server error." });
-//     }
-//   },
-// );
 
 // Manage Slots : (Delete)------------------------
 app.patch(
@@ -246,159 +223,6 @@ app.patch(
     }
   },
 );
-
-// Applied Trainer -------------------------
-app.post("/applied-as-trainer", verifyToken, async (req, res) => {
-  try {
-    const trainerInfo = req.body;
-
-    if (!trainerInfo || Object.keys(trainerInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Trainer Info not found." });
-    }
-    const existingApplicant = await appliedTrainerCollection.findOne({
-      email: trainerInfo.email,
-    });
-    if (existingApplicant) {
-      return res.status(409).json({
-        success: false,
-        message: "Already applied.",
-      });
-    }
-    const result = await appliedTrainerCollection.insertOne(trainerInfo);
-
-    if (result.insertedId) {
-      return res.status(201).json({ success: true });
-    }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to apply." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// Applied trainers get-------------------------
-app.get("/applied-as-trainer", verifyToken, async (req, res) => {
-  try {
-    const result = await appliedTrainerCollection.find().toArray();
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// Single applicant get----------------------
-app.get("/applied-as-trainer/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    if (!ObjectId.isValid(id)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid ID format." });
-    }
-
-    const result = await appliedTrainerCollection.findOne({
-      _id: new ObjectId(id),
-    });
-    if (!result) {
-      return res.status(404).json({ success: false, message: "not found." });
-    }
-
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
-// Reject applicant ---------------------------
-app.patch(
-  "/applied-as-trainer/:id",
-  verifyToken,
-  verifyAdmin,
-  async (req, res) => {
-    try {
-      const applicantId = req.params.id;
-
-      if (!ObjectId.isValid(applicantId)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid ID format." });
-      }
-
-      const filter = { _id: new ObjectId(applicantId) };
-      const updateStatus = {
-        $set: {
-          status: "rejected",
-        },
-      };
-
-      const existingApplicant = await appliedTrainerCollection.findOne(filter);
-
-      if (!existingApplicant) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Applicant not found." });
-      }
-
-      const result = await appliedTrainerCollection.updateOne(
-        filter,
-        updateStatus,
-      );
-      if (result.modifiedCount > 0) {
-        return res.status(200).json({ success: true });
-      }
-      return res
-        .status(200)
-        .json({ success: false, message: "No changes were made." });
-    } catch (error) {
-      console.error(error);
-      return res
-        .status(500)
-        .json({ success: false, message: "internal server error." });
-    }
-  },
-);
-//  Delete applicant -------------------------------
-app.delete("/applied-as-trainer/:id", verifyToken, async (req, res) => {
-  try {
-    const id = req.params.id;
-    const query = {
-      _id: new ObjectId(id),
-    };
-
-    const existingApplicant = await appliedTrainerCollection.findOne(query);
-    if (!existingApplicant) {
-      return res.status(404).json({
-        success: false,
-        message: "Applicant not found.",
-      });
-    }
-
-    const result = await appliedTrainerCollection.deleteOne(query);
-
-    if (result.deletedCount > 0) {
-      return res.status(200).json({ success: true });
-    }
-    return res.status(404).json({
-      success: false,
-      message: "Applicant not found or already deleted.",
-    });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-});
 
 // Payment intent
 app.post("/create-payment-intent", verifyToken, async (req, res) => {
