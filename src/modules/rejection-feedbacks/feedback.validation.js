@@ -11,9 +11,7 @@ const createRejectionFeedbackSchema = z.object({
 });
 
 const rejectionFeedbackQuerySchema = z.object({
-  query: z.object({
-    email: z.email().toLowerCase().trim(),
-  }),
+  query: createRejectionFeedbackSchema.shape.body.pick({ email: true }),
 });
 
 export const RejectionFeedbackValidation = {

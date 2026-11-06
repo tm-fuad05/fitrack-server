@@ -50,11 +50,13 @@ const createApplicantSchema = z.object({
   }),
 });
 
-const updateApplicantSchema = createApplicantSchema.shape.body
-  .omit({
-    status: true,
-  })
-  .partial();
+const updateApplicantSchema = z.object({
+  body: createApplicantSchema.shape.body
+    .omit({
+      status: true,
+    })
+    .partial(),
+});
 
 export const ApplicantValidation = {
   createApplicantSchema,
