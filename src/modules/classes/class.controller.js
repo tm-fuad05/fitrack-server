@@ -5,18 +5,11 @@ async function addClass(req, res) {
   try {
     const classInfo = req.body;
 
-    if (!classInfo || Object.keys(classInfo).length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Class data is required" });
-    }
-
     const result = await ClassService.addClassInDB(classInfo);
 
-    if (result.insertedId) {
+    if (result) {
       return res.status(201).json({ success: true, message: "Class posted" });
     }
-    return res.status(500).json({ success: false, message: "Failed to post." });
   } catch (error) {
     console.error(error);
     return res
