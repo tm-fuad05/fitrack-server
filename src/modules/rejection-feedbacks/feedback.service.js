@@ -1,14 +1,7 @@
-import { client } from "../../config/dbConnect.js";
-
-const rejectionFeedbackCollection = client
-  .db("FitRackDB")
-  .collection("Rejection Feedback");
+import { Feedback } from "./feedback.model.js";
 
 async function getAllRejectionFeedbacksFromDB() {
-  const result = await rejectionFeedbackCollection
-    .find()
-    .sort({ _id: -1 })
-    .toArray();
+  const result = await Feedback.find().sort({ _id: -1 }).select("-__v").lean();
   return result;
 }
 
@@ -21,7 +14,7 @@ async function getRejectionFeedbackByEmailFromDB(email) {
 }
 
 async function addRejectionFeedbackInDB(payload) {
-  const result = await rejectionFeedbackCollection.insertOne(payload);
+  const result = await Feedback.create(payload);
   return result;
 }
 

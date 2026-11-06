@@ -25,7 +25,7 @@ const updateUserRoleSchema = createUserSchema.shape.body.pick({
   role: true,
 });
 
-const emailSchema = z.object({
+const userQuerySchema = z.object({
   params: z.object({
     email: z.email().trim().toLowerCase(),
   }),
@@ -37,5 +37,5 @@ export const UserValidation = {
   createUserSchema,
   updateUserSchema,
   updateUserRoleSchema,
-  emailSchema,
+  userQuerySchema,
 };

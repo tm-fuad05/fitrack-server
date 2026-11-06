@@ -5,23 +5,14 @@ async function addRejectionFeedback(req, res) {
   try {
     const feedback = req.body;
 
-    if (!feedback) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Feedback not found." });
-    }
-
     const result =
       await RejectionFeedbackService.addRejectionFeedbackInDB(feedback);
 
-    if (result.insertedId) {
+    if (result) {
       return res
         .status(200)
-        .json({ success: true, message: "Feedback posted" });
+        .json({ success: true, message: "Feedback posted", data: result });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: " Internal server error" });
   } catch (error) {
     console.error(error);
     return res
