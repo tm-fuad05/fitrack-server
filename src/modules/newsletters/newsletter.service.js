@@ -1,14 +1,12 @@
-import { client } from "../../config/dbConnect.js";
-
-const newsletterCollection = client.db("FitRackDB").collection("newsletter");
+import { Newsletter } from "./newsletter.model.js";
 
 async function addNewsletterInDB(payload) {
-  const result = await newsletterCollection.insertOne(payload);
+  const result = await Newsletter.create(payload);
   return result;
 }
 
 async function getAllNewsletterFromDB() {
-  const result = await newsletterCollection.find().toArray();
+  const result = await Newsletter.find().select("-__v").lean();
   return result;
 }
 

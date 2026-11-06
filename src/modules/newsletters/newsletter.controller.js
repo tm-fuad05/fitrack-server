@@ -4,19 +4,14 @@ import { NewsletterService } from "./newsletter.service.js";
 async function addNewsletter(req, res) {
   try {
     const newsletterInfo = req.body;
-    if (!newsletterInfo) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Newsletter not found." });
-    }
+
     const result = await NewsletterService.addNewsletterInDB(newsletterInfo);
 
-    if (result.insertedId) {
-      return res.status(200).json({ success: true });
+    if (result) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Nesletter posted", data: result });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
   } catch (error) {
     console.error(error);
     return res
