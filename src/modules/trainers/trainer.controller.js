@@ -5,11 +5,6 @@ async function addTrainer(req, res) {
   try {
     const trainer = req.body;
 
-    if (!trainer) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Trainers not found." });
-    }
     const existingTrainer = await TrainerService.findTrainerByEmailFromDB(
       trainer?.email,
     );
@@ -23,12 +18,11 @@ async function addTrainer(req, res) {
 
     const result = await TrainerService.addTrainerInDB(trainer);
 
-    if (result.insertedId) {
-      return res.status(201).json({ success: true, data: result });
+    if (result) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Successfully added", data: result });
     }
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to add trainer." });
   } catch (error) {
     console.error(error);
     return res
@@ -60,7 +54,7 @@ async function getTrainerByName(req, res) {
     if (!trainerName.trim()) {
       return res
         .status(400)
-        .json({ success: false, message: "Trainer is required." });
+        .json({ success: false, message: "Trainer name is required." });
     }
 
     const result = await TrainerService.getTrainerByNameFromDB(trainerName);
@@ -84,12 +78,6 @@ async function addTrainerSlot(req, res) {
   try {
     const trainerId = req.params.id;
     const addedSlots = req.body;
-
-    if (!addedSlots?.availableDays) {
-      return res
-        .status(404)
-        .json({ success: false, message: "availableDays not found." });
-    }
 
     const existingSlot = await TrainerService.findTrainerByIdFromDB(trainerId);
 
@@ -124,12 +112,6 @@ async function deleteTrainerSlot(req, res) {
     const trainerId = req.params.id;
     const managedSlots = req.body;
 
-    if (!managedSlots?.availableDays) {
-      return res
-        .status(404)
-        .json({ success: false, message: "availabledays not found." });
-    }
-
     const existingSlot = await TrainerService.findTrainerByIdFromDB(trainerId);
 
     if (!existingSlot) {
@@ -148,7 +130,7 @@ async function deleteTrainerSlot(req, res) {
     }
     return res
       .status(200)
-      .json({ success: false, message: "No changes made." });
+      .json({ success: false, message: "No changes were made." });
   } catch (error) {
     console.error(error);
     return res

@@ -5,6 +5,12 @@ const createTrainerSchema =
     status: true,
   });
 
+const trainerSlotSchema =
+  ApplicantValidation.createApplicantSchema.shape.body.pick({
+    availableDays: true,
+  });
+
 export const TrainerValidation = {
   createTrainerSchema,
+  trainerSlotSchema,
 };

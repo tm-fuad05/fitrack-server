@@ -1,10 +1,10 @@
 import z from "zod";
 
-const createPaymentSchema = z.object({
+const createTransactionSchema = z.object({
   body: z.object({
     name: z
       .string({ error: "Name is required" })
-      .min(1, { error: "Name is required" })
+      .min(3, { error: "Name must be at least 3 characters" })
       .trim(),
     email: z.email().toLowerCase().trim(),
     price: z.coerce
@@ -25,13 +25,13 @@ const createPaymentSchema = z.object({
   }),
 });
 
-const paymentQuerySchema = z.object({
+const transactionQuerySchema = z.object({
   query: z.object({
     email: z.email().toLowerCase().trim(),
   }),
 });
 
 export const TransactionValidation = {
-  createPaymentSchema,
-  paymentQuerySchema,
+  createTransactionSchema,
+  transactionQuerySchema,
 };

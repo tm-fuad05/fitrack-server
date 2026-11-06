@@ -1,23 +1,18 @@
-import { ObjectId } from "mongodb";
-import { client } from "../../config/dbConnect.js";
-
-const trainerCollection = client.db("FitRackDB").collection("trainers");
+import { Trainer } from "./trainer.model.js";
 
 async function findTrainerByEmailFromDB(email) {
-  const result = await trainerCollection.findOne({ email });
+  const result = await Trainer.findOne({ email }).select("-__v");
   return result;
 }
 
 async function findTrainerByIdFromDB(trainerId) {
-  const result = await trainerCollection.findOne({
-    _id: new ObjectId(trainerId),
-  });
+  const result = await Trainer.findById(trainerId).select("-__v");
   return result;
 }
 
 // Post Trainer
 async function addTrainerInDB(payload) {
-  const result = await trainerCollection.insertOne(payload);
+  const result = await Trainer.create(payload);
   return result;
 }
 // Get All trainers
@@ -30,13 +25,13 @@ async function getAllTrainersFromDB(sort) {
   if (sort === "trainer experience") {
     sortQuery = { yearsOfExperience: -1 };
   }
-  const result = await trainerCollection.find().sort(sortQuery).toArray();
+  const result = await Trainer.find().sort(sortQuery).select("-__v").lean();
 
   return result;
 }
 // Get Specific Trainer
 async function getTrainerByNameFromDB(trainerName) {
-  const result = await trainerCollection.findOne({
+  const result = await Trainer.findOne({
     fullName: trainerName,
   });
 
@@ -45,30 +40,26 @@ async function getTrainerByNameFromDB(trainerName) {
 
 // Manage Slots : (Add)
 async function addTrainerSlotInDB(trainerId, payload) {
-  const filter = { _id: new ObjectId(trainerId) };
-
   const updatedSlots = {
     $set: {
       availableDays: payload,
     },
   };
 
-  const result = await trainerCollection.updateOne(filter, updatedSlots);
+  const result = await Trainer.updateOne({ _id: trainerId }, updatedSlots);
 
   return result;
 }
 
 // Manage Slots : (Delete)
 async function deleteTrainerSlotFromDB(trainerId, payload) {
-  const filter = { _id: new ObjectId(trainerId) };
-
   const updatedSlots = {
     $set: {
       availableDays: payload,
     },
   };
 
-  const result = await trainerCollection.updateOne(filter, updatedSlots);
+  const result = await Trainer.updateOne({ _id: trainerId }, updatedSlots);
 
   return result;
 }

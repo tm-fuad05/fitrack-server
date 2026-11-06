@@ -1,31 +1,25 @@
-import { client } from "../../config/dbConnect.js";
-
-const transactionCollection = client.db("FitRackDB").collection("transactions");
+import { Transaction } from "./transaction.model.js";
 
 // Post transaction
 async function addTransactionInDB(payload) {
-  const result = await transactionCollection.insertOne(payload);
+  const result = await Transaction.create(payload);
 
   return result;
 }
 // Get all transaction
 async function getAllTransactionsFromDB() {
-  const result = await transactionCollection.find().toArray();
+  const result = await Transaction.find().select("-__v").lean();
   return result;
 }
 
 // Recent 6 transaction
 async function getRecentTransactionsFromDB() {
-  const result = await transactionCollection
-    .find()
-    .sort({ _id: -1 })
-    .limit(6)
-    .toArray();
+  const result = await Transaction.find().sort({ _id: -1 }).limit(6).lean();
   return result;
 }
 // Get Specific User's transaction
 async function getSpecificUserTransactionFromDB(email) {
-  const result = await transactionCollection.find({ email }).toArray();
+  const result = await Transaction.find({ email }).select("-__v").lean();
   return result;
 }
 

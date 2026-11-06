@@ -5,22 +5,15 @@ async function addTransaction(req, res) {
   try {
     const transactionInfo = req.body;
 
-    if (!transactionInfo) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Transaction info required." });
-    }
     const result = await TransactionService.addTransactionInDB(transactionInfo);
 
-    if (result.insertedId) {
-      return res
-        .status(200)
-        .json({ success: true, message: "Transaction successfull" });
+    if (result) {
+      return res.status(200).json({
+        success: true,
+        message: "Transaction successfull",
+        data: result,
+      });
     }
-    return res.status(500).json({
-      success: false,
-      message: "Failed to record Transaction information.",
-    });
   } catch (error) {
     console.error(error);
     return res

@@ -23,12 +23,14 @@ router.patch(
   "/addSlot/:id",
   verifyToken,
   verifyTrainer,
+  validateRequest(TrainerValidation.trainerSlotSchema),
   TrainerController.addTrainerSlot,
 );
 router.patch(
   "/deleteSlot/:id",
   verifyToken,
   verifyTrainer,
+  validateRequest(TrainerValidation.trainerSlotSchema),
   TrainerController.deleteTrainerSlot,
 );
 export const TrainerRouter = router;
