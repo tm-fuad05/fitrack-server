@@ -1,3 +1,4 @@
+import { rejects } from "node:assert";
 import { UserService } from "./user.service.js";
 
 // Get All Users
@@ -54,16 +55,13 @@ async function addUser(req, res) {
     }
     const result = await UserService.addUserInDB(user);
 
-    if (result.insertedId) {
+    if (result) {
       return res.status(201).json({
         success: true,
         message: "User added to the database",
+        data: result,
       });
     }
-    return res.status(500).json({
-      success: false,
-      message: "Failed to add the user.",
-    });
   } catch (error) {
     console.error("POST User error", error);
     return res.status(500).json({
@@ -78,6 +76,7 @@ async function editUserInfo(req, res) {
   try {
     const userId = req.params.id;
     const updatedUserInfo = req.body;
+    const { email } = req.decoded;
 
     const existingUser = await UserService.findUserByIdFromDB(userId);
 
@@ -85,6 +84,13 @@ async function editUserInfo(req, res) {
       return res
         .status(404)
         .json({ success: false, message: "User not found." });
+    }
+
+    if (existingUser.email !== email) {
+      return res.status(400).json({
+        success: false,
+        message: "You can't change other user's info",
+      });
     }
 
     const result = await UserService.editUserInfoFromDB(
@@ -112,6 +118,7 @@ async function editUserInfo(req, res) {
 async function deleteUser(req, res) {
   try {
     const userId = req.params.id;
+    const { email } = req.decoded;
 
     const existingUser = await UserService.findUserByIdFromDB(userId);
 
@@ -121,15 +128,22 @@ async function deleteUser(req, res) {
         .json({ success: false, message: "User not found." });
     }
 
+    if (existingUser.email === email) {
+      return res.status(400).json({
+        success: false,
+        message: "You can't change your own role",
+      });
+    }
+
     const result = await UserService.deleteUserFromDB(userId);
 
-    if (result.deletedCount > 0) {
-      return res.status(200).json({ success: true, data: result });
+    if (result) {
+      return res.status(200).json({
+        success: true,
+        message: `User: ${existingUser.name} deleted successfully`,
+        data: result,
+      });
     }
-    return res.status(404).json({
-      success: false,
-      message: "User not found or already deleted.",
-    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -140,6 +154,7 @@ async function deleteUser(req, res) {
 async function changeUserRole(req, res) {
   try {
     const userId = req.params.id;
+    const { email } = req.decoded;
     const { role } = req.body;
 
     const existingUser = await UserService.findUserByIdFromDB(userId);
@@ -154,6 +169,13 @@ async function changeUserRole(req, res) {
       return res.status(400).json({
         success: false,
         message: `User is already a ${role.toLowerCase()}.`,
+      });
+    }
+
+    if (existingUser.email === email) {
+      return res.status(400).json({
+        success: false,
+        message: "You can't change your own role",
       });
     }
 

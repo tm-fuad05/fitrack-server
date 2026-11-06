@@ -26,9 +26,7 @@ const createTransactionSchema = z.object({
 });
 
 const transactionQuerySchema = z.object({
-  query: z.object({
-    email: z.email().toLowerCase().trim(),
-  }),
+  query: createTransactionSchema.shape.body.pick({ email: true }),
 });
 
 export const TransactionValidation = {

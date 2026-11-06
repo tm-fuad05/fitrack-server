@@ -8,7 +8,6 @@ import { verifyToken } from "../../middlewares/verifyToken.middleware.js";
 const router = express.Router();
 
 router.get("/", verifyToken, verifyAdmin, UserController.getAllUsers);
-
 router.post(
   "/",
   validateRequest(UserValidation.createUserSchema),
@@ -18,6 +17,7 @@ router.get("/:id", verifyToken, verifyAdmin, UserController.getUserById);
 
 router.get(
   "/check-user-role/:email",
+  verifyToken,
   verifyAdmin,
   validateRequest(UserValidation.userQuerySchema),
   UserController.checkUserRole,
@@ -30,6 +30,7 @@ router.patch(
 );
 router.patch(
   "/change-user-role/:id",
+  verifyToken,
   verifyAdmin,
   validateRequest(UserValidation.updateUserRoleSchema),
   UserController.changeUserRole,

@@ -1,55 +1,47 @@
-import { ObjectId } from "mongodb";
-import { client } from "../../config/dbConnect.js";
-
-const userCollection = client.db("FitRackDB").collection("users");
+import { User } from "./user.model.js";
 
 async function getAllUsersfromDB() {
-  const result = await userCollection.find().toArray();
+  const result = await User.find().select("-__v").lean();
   return result;
 }
 
 async function findUserByEmailFromDB(email) {
-  const existing = await userCollection.findOne({ email });
+  const existing = await User.findOne({ email }).select("-__v");
   return existing;
 }
 
 async function findUserByIdFromDB(userId) {
-  const filter = { _id: new ObjectId(userId) };
-  const existing = await userCollection.findOne(filter);
+  const existing = await User.findById(userId).select("-__v");
   return existing;
 }
 
 async function addUserInDB(payload) {
-  const result = await userCollection.insertOne(payload);
+  const result = await User.create(payload);
   return result;
 }
 
 async function editUserInfoFromDB(userId, payload) {
-  const filter = { _id: new ObjectId(userId) };
-
   const updatedProfile = {
     $set: {
       name: payload.name,
     },
   };
-  const result = await userCollection.updateOne(filter, updatedProfile);
+  const result = await User.updateOne({ _id: userId }, updatedProfile);
   return result;
 }
 
 async function deleteUserFromDB(userId) {
-  const filter = { _id: new ObjectId(userId) };
-  const result = await userCollection.deleteOne(filter);
+  const result = await User.findByIdAndDelete(userId);
   return result;
 }
 
 async function changeUserRoleFromDB(userId, role) {
-  const filter = { _id: new ObjectId(userId) };
   const updatedRole = {
     $set: {
       role: role,
     },
   };
-  const result = await userCollection.updateOne(filter, updatedRole);
+  const result = await User.updateOne({ _id: userId }, updatedRole);
   return result;
 }
 

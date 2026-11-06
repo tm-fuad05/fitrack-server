@@ -10,6 +10,7 @@ const trainerSchema = new Schema(
     email: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
     },
     age: {

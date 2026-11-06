@@ -15,19 +15,25 @@ const createUserSchema = z.object({
   }),
 });
 
-const updateUserSchema = createUserSchema.shape.body
-  .omit({
-    role: true,
-  })
-  .partial();
+const updateUserSchema = z.object({
+  body: createUserSchema.shape.body
+    .pick({
+      name: true,
+    })
+    .partial(),
+});
 
-const updateUserRoleSchema = createUserSchema.shape.body.pick({
-  role: true,
+const updateUserRoleSchema = z.object({
+  body: z.object({
+    role: z.enum(["ADMIN", "TRAINER", "MEMBER"], {
+      error: "Role can be ADMIN, TRAINER or MEMBER",
+    }),
+  }),
 });
 
 const userQuerySchema = z.object({
-  params: z.object({
-    email: z.email().trim().toLowerCase(),
+  params: createUserSchema.shape.body.pick({
+    email: true,
   }),
 });
 
