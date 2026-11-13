@@ -7,6 +7,7 @@ import {
 import { validateRequest } from "../../middlewares/validateRequest.middleware.js";
 import { TrainerValidation } from "./trainer.validation.js";
 import { TrainerController } from "./trainer.controller.js";
+import { globalValidation } from "../../validation/globalValidation.js";
 
 const router = express.Router();
 
@@ -18,9 +19,14 @@ router.post(
   TrainerController.addTrainer,
 );
 router.get("/", TrainerController.getAllTrainers);
+router.get(
+  "/me",
+  validateRequest(globalValidation.emailQuerySchema),
+  TrainerController.getTrainerByEmail,
+);
 router.get("/:trainerName", TrainerController.getTrainerByName);
 router.patch(
-  "/addSlot/:id",
+  "/add-slot/:id",
   verifyToken,
   verifyTrainer,
   validateRequest(TrainerValidation.trainerSlotSchema),
@@ -32,5 +38,12 @@ router.patch(
   verifyTrainer,
   validateRequest(TrainerValidation.trainerSlotSchema),
   TrainerController.deleteTrainerSlot,
+);
+router.delete(
+  "/delete",
+  verifyToken,
+  verifyAdmin,
+  validateRequest(globalValidation.emailQuerySchema),
+  TrainerController.deleteTrainer,
 );
 export const TrainerRouter = router;

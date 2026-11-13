@@ -1,11 +1,11 @@
 import { Trainer } from "./trainer.model.js";
 
-async function findTrainerByEmailFromDB(email) {
+async function getTrainerByEmailFromDB(email) {
   const result = await Trainer.findOne({ email }).select("-__v");
   return result;
 }
 
-async function findTrainerByIdFromDB(trainerId) {
+async function getTrainerByIdFromDB(trainerId) {
   const result = await Trainer.findById(trainerId).select("-__v");
   return result;
 }
@@ -38,11 +38,17 @@ async function getTrainerByNameFromDB(trainerName) {
   return result;
 }
 
+async function deleteTrainerFromDB(email) {
+  const result = await Trainer.deleteOne({ email });
+  return result;
+}
+
 // Manage Slots : (Add)
 async function addTrainerSlotInDB(trainerId, payload) {
   const updatedSlots = {
     $set: {
-      availableDays: payload,
+      availableDays: payload.availableDays,
+      availableTime: payload.availableTime,
     },
   };
 
@@ -70,6 +76,7 @@ export const TrainerService = {
   getTrainerByNameFromDB,
   addTrainerSlotInDB,
   deleteTrainerSlotFromDB,
-  findTrainerByEmailFromDB,
-  findTrainerByIdFromDB,
+  getTrainerByEmailFromDB,
+  getTrainerByIdFromDB,
+  deleteTrainerFromDB,
 };

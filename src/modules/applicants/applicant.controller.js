@@ -43,7 +43,34 @@ async function getAllApplicants(req, res) {
       .json({ success: false, message: "Internal server error." });
   }
 }
-// Single applicant get----------------------
+// Single applicant get----------------------(Email)
+async function getApplicantByEmail(req, res) {
+  try {
+    const { email } = req.query;
+
+    if (email !== req.decoded.email) {
+      return res.status(403).json({
+        success: false,
+        message: "You can't see another user's application details",
+      });
+    }
+
+    const result = await ApplicantService.getApplicantByEmailFromDB(email);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Not found." });
+    }
+
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
+  }
+}
+
+// Single applicant get---------------------- (ID)
 async function getApplicantById(req, res) {
   try {
     const applicantId = req.params.id;
@@ -96,10 +123,10 @@ async function rejectApplication(req, res) {
 //  Delete applicant -------------------------------
 async function deleteApplication(req, res) {
   try {
-    const applicantId = req.params.id;
+    const { email } = req.query;
 
     const existingApplicant =
-      await ApplicantService.getApplicantByIdFromDB(applicantId);
+      await ApplicantService.getApplicantByEmailFromDB(email);
 
     if (!existingApplicant) {
       return res.status(404).json({
@@ -108,13 +135,12 @@ async function deleteApplication(req, res) {
       });
     }
 
-    const result = await ApplicantService.deleteApplicationFromDB(applicantId);
+    const result = await ApplicantService.deleteApplicationFromDB(email);
 
-    if (result) {
+    if (result.deletedCount > 0) {
       return res.status(200).json({
         success: true,
         message: "Application deleted successfully",
-        data: result,
       });
     }
   } catch (error) {
@@ -128,7 +154,8 @@ async function deleteApplication(req, res) {
 export const ApplicantController = {
   applyForTrainer,
   getAllApplicants,
-  getApplicantById,
+  getApplicantByEmail,
   rejectApplication,
   deleteApplication,
+  getApplicantById,
 };

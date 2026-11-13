@@ -17,6 +17,11 @@ async function getAllApplicantsFromDB() {
   return result;
 }
 
+async function getApplicantByEmailFromDB(email) {
+  const result = await Applicant.findOne({ email }).select("-__v");
+  return result;
+}
+
 async function getApplicantByIdFromDB(applicantId) {
   const result = await Applicant.findById(applicantId).select("-__v");
   return result;
@@ -32,8 +37,8 @@ async function rejectApplicationInDB(applicantId) {
   return result;
 }
 
-async function deleteApplicationFromDB(applicantId) {
-  const result = await Applicant.findByIdAndDelete(applicantId);
+async function deleteApplicationFromDB(email) {
+  const result = await Applicant.deleteOne({ email });
   return result;
 }
 
@@ -41,7 +46,8 @@ export const ApplicantService = {
   findApplicantByEmailFromDB,
   applyForTrainerInDB,
   getAllApplicantsFromDB,
-  getApplicantByIdFromDB,
+  getApplicantByEmailFromDB,
   rejectApplicationInDB,
   deleteApplicationFromDB,
+  getApplicantByIdFromDB,
 };

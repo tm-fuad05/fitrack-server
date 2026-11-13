@@ -4,6 +4,7 @@ import { verifyAdmin } from "../../middlewares/verifyUserRole.middleware.js";
 import { TransactionController } from "./transaction.controller.js";
 import { validateRequest } from "../../middlewares/validateRequest.middleware.js";
 import { TransactionValidation } from "./transaction.validation.js";
+import { globalValidation } from "../../validation/globalValidation.js";
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.get(
 router.get(
   "/user",
   verifyToken,
-  validateRequest(TransactionValidation.transactionQuerySchema),
+  validateRequest(globalValidation.emailQuerySchema),
   TransactionController.getSpecificUserTransaction,
 );
 

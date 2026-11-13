@@ -41,6 +41,29 @@ async function getUserById(req, res) {
   }
 }
 
+// Get Specific User
+async function getUserByEmail(req, res) {
+  try {
+    const { email } = req.query;
+    const result = await UserService.findUserByEmailFromDB(email);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Not found." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("GET User Error", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 // Post Users
 async function addUser(req, res) {
   try {
@@ -128,10 +151,10 @@ async function deleteUser(req, res) {
         .json({ success: false, message: "User not found." });
     }
 
-    if (existingUser.email === email) {
+    if (existingUser?.email === email) {
       return res.status(400).json({
         success: false,
-        message: "You can't change your own role",
+        message: "You can't delete yourself from database",
       });
     }
 
@@ -153,11 +176,11 @@ async function deleteUser(req, res) {
 // User Role change
 async function changeUserRole(req, res) {
   try {
-    const userId = req.params.id;
-    const { email } = req.decoded;
+    const { email } = req.query;
+    const { email: currentEmail } = req.decoded;
     const { role } = req.body;
 
-    const existingUser = await UserService.findUserByIdFromDB(userId);
+    const existingUser = await UserService.findUserByEmailFromDB(email);
 
     if (!existingUser) {
       return res
@@ -172,20 +195,18 @@ async function changeUserRole(req, res) {
       });
     }
 
-    if (existingUser.email === email) {
+    if (existingUser.email === currentEmail) {
       return res.status(400).json({
         success: false,
         message: "You can't change your own role",
       });
     }
 
-    const result = await UserService.changeUserRoleFromDB(userId, role);
+    const result = await UserService.changeUserRoleFromDB(email, role);
 
     let message;
     if (role === "ADMIN") {
       message = "Promoted to Admin";
-    } else if (role === "TRAINER") {
-      message = "User is now a Trainer";
     } else message = "Demoted to Member";
 
     if (result.modifiedCount > 0) {
@@ -206,7 +227,7 @@ async function changeUserRole(req, res) {
 // Check User Role
 async function checkUserRole(req, res) {
   try {
-    const { email } = req.params;
+    const { email } = req.query;
 
     if (email !== req.decoded.email) {
       return res
@@ -224,7 +245,7 @@ async function checkUserRole(req, res) {
 
     return res.status(200).json({
       success: true,
-      role: user?.role,
+      data: user?.role,
     });
   } catch (error) {
     console.error(error);
@@ -242,4 +263,5 @@ export const UserController = {
   deleteUser,
   changeUserRole,
   checkUserRole,
+  getUserByEmail,
 };

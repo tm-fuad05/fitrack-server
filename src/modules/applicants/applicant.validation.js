@@ -6,7 +6,7 @@ const createApplicantSchema = z.object({
       .string({ error: "Name is required" })
       .min(3, { error: "Name must be at least 3 characters" })
       .trim(),
-    email: z.email().toLowerCase().trim(),
+    email: z.email({ error: "Invalid email address" }).toLowerCase().trim(),
     age: z.coerce
       .number({ error: "Age is required" })
       .gte(18, { error: "Under 18 is not allowed to be a trainer" }),
@@ -41,7 +41,7 @@ const createApplicantSchema = z.object({
           },
         ),
       )
-      .nonempty(),
+      .nonempty({ error: "Days are required" }),
     availableTime: z
       .string({ error: "Available time is required" })
       .min(1, { error: "Available time is required" })

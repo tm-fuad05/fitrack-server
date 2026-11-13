@@ -8,9 +8,12 @@ const createTrainerSchema = z.object({
 });
 
 const trainerSlotSchema = z.object({
-  body: ApplicantValidation.createApplicantSchema.shape.body.pick({
-    availableDays: true,
-  }),
+  body: ApplicantValidation.createApplicantSchema.shape.body
+    .pick({
+      availableDays: true,
+      availableTime: true,
+    })
+    .partial(),
 });
 
 export const TrainerValidation = {

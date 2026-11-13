@@ -6,7 +6,7 @@ const createTransactionSchema = z.object({
       .string({ error: "Name is required" })
       .min(3, { error: "Name must be at least 3 characters" })
       .trim(),
-    email: z.email().toLowerCase().trim(),
+    email: z.email({ error: "Invalid email address" }).toLowerCase().trim(),
     price: z.coerce
       .number({ error: "Price is required" })
       .min(1, { error: "Price is required" }),
@@ -25,11 +25,6 @@ const createTransactionSchema = z.object({
   }),
 });
 
-const transactionQuerySchema = z.object({
-  query: createTransactionSchema.shape.body.pick({ email: true }),
-});
-
 export const TransactionValidation = {
   createTransactionSchema,
-  transactionQuerySchema,
 };

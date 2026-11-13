@@ -4,6 +4,7 @@ import { verifyToken } from "../../middlewares/verifyToken.middleware.js";
 import { verifyAdmin } from "../../middlewares/verifyUserRole.middleware.js";
 import { validateRequest } from "../../middlewares/validateRequest.middleware.js";
 import { ApplicantValidation } from "./applicant.validation.js";
+import { globalValidation } from "../../validation/globalValidation.js";
 
 const router = express.Router();
 
@@ -13,14 +14,34 @@ router.post(
   validateRequest(ApplicantValidation.createApplicantSchema),
   ApplicantController.applyForTrainer,
 );
+
 router.get("/", verifyToken, verifyAdmin, ApplicantController.getAllApplicants);
-router.get("/:id", verifyToken, ApplicantController.getApplicantById);
-router.patch(
+
+router.get(
+  "/my-application",
+  verifyToken,
+  validateRequest(globalValidation.emailQuerySchema),
+  ApplicantController.getApplicantByEmail,
+);
+
+router.get(
   "/:id",
+  verifyToken,
+  verifyAdmin,
+  ApplicantController.getApplicantById,
+);
+
+router.patch(
+  "/reject/:id",
   verifyToken,
   verifyAdmin,
   ApplicantController.rejectApplication,
 );
-router.delete("/:id", verifyToken, ApplicantController.deleteApplication);
+router.delete(
+  "/delete",
+  verifyToken,
+  validateRequest(globalValidation.emailQuerySchema),
+  ApplicantController.deleteApplication,
+);
 
 export const ApplicantRouter = router;

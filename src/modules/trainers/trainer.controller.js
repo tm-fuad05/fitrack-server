@@ -5,7 +5,7 @@ async function addTrainer(req, res) {
   try {
     const trainer = req.body;
 
-    const existingTrainer = await TrainerService.findTrainerByEmailFromDB(
+    const existingTrainer = await TrainerService.getTrainerByEmailFromDB(
       trainer?.email,
     );
 
@@ -73,13 +73,56 @@ async function getTrainerByName(req, res) {
   }
 }
 
+// Get Specific Trainer
+async function getTrainerByEmail(req, res) {
+  try {
+    const { email } = req.query;
+
+    const result = await TrainerService.getTrainerByEmailFromDB(email);
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Not found." });
+    }
+
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+}
+
+async function deleteTrainer(req, res) {
+  const { email } = req.query;
+
+  const existing = await TrainerService.getTrainerByEmailFromDB(email);
+
+  if (!existing) {
+    return res.status(404).json({
+      success: false,
+      message: "Trainer not found",
+    });
+  }
+
+  const result = await TrainerService.deleteTrainerFromDB(email);
+
+  if (result.deletedCount > 0) {
+    return res.status(200).json({
+      success: true,
+      message: "Trainer deleted successfully",
+    });
+  }
+}
+
 // Manage Slots : (Add)
 async function addTrainerSlot(req, res) {
   try {
     const trainerId = req.params.id;
-    const addedSlots = req.body;
+    const slots = req.body;
 
-    const existingSlot = await TrainerService.findTrainerByIdFromDB(trainerId);
+    const existingSlot = await TrainerService.getTrainerByIdFromDB(trainerId);
 
     if (!existingSlot) {
       return res
@@ -87,10 +130,7 @@ async function addTrainerSlot(req, res) {
         .json({ success: false, message: "Trainer not found" });
     }
 
-    const result = await TrainerService.addTrainerSlotInDB(
-      trainerId,
-      addedSlots?.availableDays,
-    );
+    const result = await TrainerService.addTrainerSlotInDB(trainerId, slots);
 
     if (result.modifiedCount > 0) {
       return res.status(200).json({ success: true });
@@ -112,7 +152,7 @@ async function deleteTrainerSlot(req, res) {
     const trainerId = req.params.id;
     const managedSlots = req.body;
 
-    const existingSlot = await TrainerService.findTrainerByIdFromDB(trainerId);
+    const existingSlot = await TrainerService.getTrainerByIdFromDB(trainerId);
 
     if (!existingSlot) {
       return res
@@ -144,5 +184,7 @@ export const TrainerController = {
   getAllTrainers,
   getTrainerByName,
   addTrainerSlot,
+  deleteTrainer,
   deleteTrainerSlot,
+  getTrainerByEmail,
 };

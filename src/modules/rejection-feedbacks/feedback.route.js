@@ -4,6 +4,7 @@ import { verifyAdmin } from "../../middlewares/verifyUserRole.middleware.js";
 import { validateRequest } from "../../middlewares/validateRequest.middleware.js";
 import { RejectionFeedbackValidation } from "./feedback.validation.js";
 import { verifyToken } from "../../middlewares/verifyToken.middleware.js";
+import { globalValidation } from "../../validation/globalValidation.js";
 
 const router = express.Router();
 
@@ -21,10 +22,9 @@ router.post(
   RejectionFeedbackController.addRejectionFeedback,
 );
 router.get(
-  "/user",
+  "/applicant",
   verifyToken,
-  verifyAdmin,
-  validateRequest(RejectionFeedbackValidation.rejectionFeedbackQuerySchema),
+  validateRequest(globalValidation.emailQuerySchema),
   RejectionFeedbackController.getRejectionFeedbackByEmail,
 );
 

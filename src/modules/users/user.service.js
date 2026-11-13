@@ -6,13 +6,13 @@ async function getAllUsersfromDB() {
 }
 
 async function findUserByEmailFromDB(email) {
-  const existing = await User.findOne({ email }).select("-__v");
-  return existing;
+  const result = await User.findOne({ email }).select("-__v");
+  return result;
 }
 
 async function findUserByIdFromDB(userId) {
-  const existing = await User.findById(userId).select("-__v");
-  return existing;
+  const result = await User.findById(userId).select("-__v");
+  return result;
 }
 
 async function addUserInDB(payload) {
@@ -35,13 +35,13 @@ async function deleteUserFromDB(userId) {
   return result;
 }
 
-async function changeUserRoleFromDB(userId, role) {
+async function changeUserRoleFromDB(email, role) {
   const updatedRole = {
     $set: {
       role: role,
     },
   };
-  const result = await User.updateOne({ _id: userId }, updatedRole);
+  const result = await User.updateOne({ email }, updatedRole);
   return result;
 }
 

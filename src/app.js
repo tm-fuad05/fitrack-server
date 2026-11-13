@@ -11,6 +11,7 @@ import { TransactionRouter } from "./modules/transactions/transaction.route.js";
 import { ApplicantRouter } from "./modules/applicants/applicant.route.js";
 import { TrainerRouter } from "./modules/trainers/trainer.route.js";
 import { StripeRouter } from "./modules/stripe-payment/stripe.route.js";
+import { UploadRouter } from "./modules/upload/upload.router.js";
 
 const app = express();
 
@@ -42,5 +43,6 @@ app.use("/api/v1/transactions", TransactionRouter);
 app.use("/api/v1/applicants", ApplicantRouter);
 app.use("/api/v1/trainers", TrainerRouter);
 app.use("/api/v1/create-payment-intent", StripeRouter);
+app.use("/api/v1/upload-image", UploadRouter);
 
 export default app;
