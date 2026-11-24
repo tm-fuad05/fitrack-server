@@ -14,6 +14,7 @@ import { StripeRouter } from "./modules/stripe-payment/stripe.route.js";
 import { UploadRouter } from "./modules/upload/upload.router.js";
 
 const app = express();
+const root = express.Router();
 
 // Middlewares
 app.use(
