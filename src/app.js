@@ -24,25 +24,28 @@ app.use(
 app.use(express.json());
 
 // Root Api
+app.use("/api/v1");
+
+// Project APIs
+root.use("/auth", AuthRouter);
+root.use("/users", UserRouter);
+root.use("/reviews", ReviewRouter);
+root.use("/newsletters", NewsletterRouter);
+root.use("/classes", ClassRouter);
+root.use("/communities", CommunityRouter);
+root.use("/rejection-feedback", RejectionFeedbackRouter);
+root.use("/transactions", TransactionRouter);
+root.use("/applicants", ApplicantRouter);
+root.use("/trainers", TrainerRouter);
+root.use("/create-payment-intent", StripeRouter);
+root.use("/upload-image", UploadRouter);
+
+// Health Check route
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
     message: "Fitrack server running...",
   });
 });
-
-// Project APIs
-app.use("/api/v1/auth", AuthRouter);
-app.use("/api/v1/users", UserRouter);
-app.use("/api/v1/reviews", ReviewRouter);
-app.use("/api/v1/newsletters", NewsletterRouter);
-app.use("/api/v1/classes", ClassRouter);
-app.use("/api/v1/communities", CommunityRouter);
-app.use("/api/v1/rejection-feedback", RejectionFeedbackRouter);
-app.use("/api/v1/transactions", TransactionRouter);
-app.use("/api/v1/applicants", ApplicantRouter);
-app.use("/api/v1/trainers", TrainerRouter);
-app.use("/api/v1/create-payment-intent", StripeRouter);
-app.use("/api/v1/upload-image", UploadRouter);
 
 export default app;
