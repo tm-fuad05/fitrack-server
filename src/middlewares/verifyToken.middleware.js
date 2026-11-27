@@ -16,6 +16,7 @@ export const verifyToken = (req, res, next) => {
         .json({ success: false, message: "Unauthorized access!" });
     }
     req.decoded = decoded;
+    console.log(req.decoded);
     next();
   });
 };

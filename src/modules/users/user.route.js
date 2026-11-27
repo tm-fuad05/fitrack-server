@@ -14,11 +14,7 @@ router.post(
   validateRequest(UserValidation.createUserSchema),
   UserController.addUser,
 );
-router.get(
-  "/me",
-  validateRequest(globalValidation.emailQuerySchema),
-  UserController.getUserByEmail,
-);
+router.get("/me", verifyToken, UserController.getMyUserData);
 
 router.patch(
   "/change-user-role",

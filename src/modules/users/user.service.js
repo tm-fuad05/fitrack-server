@@ -5,7 +5,7 @@ async function getAllUsersfromDB() {
   return result;
 }
 
-async function getUserByEmailFromDB(email) {
+async function getMyUserDataFromDB(email) {
   const result = await User.findOne({ email }).select("-__v");
   return result;
 }
@@ -49,7 +49,7 @@ async function changeUserRoleFromDB(email, role) {
 
 export const UserService = {
   getAllUsersfromDB,
-  getUserByEmailFromDB,
+  getMyUserDataFromDB,
   addUserInDB,
   getUserByIdFromDB,
   editUserInfoFromDB,

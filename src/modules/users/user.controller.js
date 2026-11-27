@@ -42,10 +42,10 @@ async function getUserById(req, res) {
 }
 
 // Get Specific User
-async function getUserByEmail(req, res) {
+async function getMyUserData(req, res) {
   try {
-    const { email } = req.query;
-    const result = await UserService.getUserByEmailFromDB(email);
+    const { email } = req.decoded;
+    const result = await UserService.getMyUserDataFromDB(email);
 
     if (!result) {
       return res.status(404).json({ success: false, message: "Not found." });
@@ -69,7 +69,7 @@ async function addUser(req, res) {
   try {
     const user = req.body;
 
-    const existing = await UserService.getUserByEmailFromDB(user.email);
+    const existing = await UserService.getMyUserDataFromDB(user.email);
 
     if (existing) {
       return res
@@ -101,7 +101,7 @@ async function editUserInfo(req, res) {
     const updatedUserInfo = req.body;
     const { email: currentEmail } = req.decoded;
 
-    const existingUser = await UserService.getUserByEmailFromDB(email);
+    const existingUser = await UserService.getMyUserDataFromDB(email);
 
     if (!existingUser) {
       return res
@@ -180,7 +180,7 @@ async function changeUserRole(req, res) {
     const { email: currentEmail } = req.decoded;
     const { role } = req.body;
 
-    const existingUser = await UserService.getUserByEmailFromDB(email);
+    const existingUser = await UserService.getMyUserDataFromDB(email);
 
     if (!existingUser) {
       return res
@@ -231,5 +231,5 @@ export const UserController = {
   addUser,
   deleteUser,
   changeUserRole,
-  getUserByEmail,
+  getMyUserData,
 };

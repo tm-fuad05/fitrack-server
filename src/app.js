@@ -25,7 +25,7 @@ app.use(
 app.use(express.json());
 
 // Root Api
-app.use("/api/v1");
+app.use("/api/v1", root);
 
 // Project APIs
 root.use("/auth", AuthRouter);
