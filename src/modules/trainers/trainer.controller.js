@@ -116,8 +116,8 @@ async function deleteTrainer(req, res) {
   }
 }
 
-// Manage Slots : (Add)
-async function addTrainerSlot(req, res) {
+// Edit trainer data
+async function editTrainer(req, res) {
   try {
     const trainerId = req.params.id;
     const slots = req.body;
@@ -130,14 +130,14 @@ async function addTrainerSlot(req, res) {
         .json({ success: false, message: "Trainer not found" });
     }
 
-    const result = await TrainerService.addTrainerSlotInDB(trainerId, slots);
+    const result = await TrainerService.editTrainerInDB(trainerId, slots);
 
     if (result.modifiedCount > 0) {
-      return res.status(200).json({ success: true });
+      return res
+        .status(200)
+        .json({ success: true, message: "Updated successfully" });
     }
-    return res
-      .status(200)
-      .json({ success: false, message: "No changes made." });
+    return res.status(200).json({ success: true, message: "No changes made." });
   } catch (error) {
     console.error(error);
     return res
@@ -146,45 +146,11 @@ async function addTrainerSlot(req, res) {
   }
 }
 
-// Manage Slots : (Delete)
-async function deleteTrainerSlot(req, res) {
-  try {
-    const trainerId = req.params.id;
-    const managedSlots = req.body;
-
-    const existingSlot = await TrainerService.getTrainerByIdFromDB(trainerId);
-
-    if (!existingSlot) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Trainer not found." });
-    }
-
-    const result = await TrainerService.deleteTrainerSlotFromDB(
-      trainerId,
-      managedSlots?.availableDays,
-    );
-
-    if (result.modifiedCount > 0) {
-      return res.status(200).json({ success: true });
-    }
-    return res
-      .status(200)
-      .json({ success: false, message: "No changes were made." });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: true, message: "Internal server error." });
-  }
-}
-
 export const TrainerController = {
   addTrainer,
   getAllTrainers,
   getTrainerByName,
-  addTrainerSlot,
+  editTrainer,
   deleteTrainer,
-  deleteTrainerSlot,
   getTrainerByEmail,
 };

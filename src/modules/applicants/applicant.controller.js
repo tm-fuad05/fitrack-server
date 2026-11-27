@@ -112,7 +112,7 @@ async function rejectApplication(req, res) {
     }
     return res
       .status(200)
-      .json({ success: false, message: "No changes were made." });
+      .json({ success: true, message: "No changes were made." });
   } catch (error) {
     console.error(error);
     return res

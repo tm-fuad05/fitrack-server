@@ -26,19 +26,13 @@ router.get(
 );
 router.get("/:trainerName", TrainerController.getTrainerByName);
 router.patch(
-  "/add-slot/:id",
+  "/update/:id",
   verifyToken,
   verifyTrainer,
   validateRequest(TrainerValidation.trainerSlotSchema),
-  TrainerController.addTrainerSlot,
+  TrainerController.editTrainer,
 );
-router.patch(
-  "/deleteSlot/:id",
-  verifyToken,
-  verifyTrainer,
-  validateRequest(TrainerValidation.trainerSlotSchema),
-  TrainerController.deleteTrainerSlot,
-);
+
 router.delete(
   "/delete",
   verifyToken,

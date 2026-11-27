@@ -22,7 +22,7 @@ async function getAllUsers(req, res) {
 async function getUserById(req, res) {
   try {
     const userId = req.params.id;
-    const result = await UserService.findUserByIdFromDB(userId);
+    const result = await UserService.getUserByIdFromDB(userId);
 
     if (!result) {
       return res.status(404).json({ success: false, message: "Not found." });
@@ -45,7 +45,7 @@ async function getUserById(req, res) {
 async function getUserByEmail(req, res) {
   try {
     const { email } = req.query;
-    const result = await UserService.findUserByEmailFromDB(email);
+    const result = await UserService.getUserByEmailFromDB(email);
 
     if (!result) {
       return res.status(404).json({ success: false, message: "Not found." });
@@ -69,7 +69,7 @@ async function addUser(req, res) {
   try {
     const user = req.body;
 
-    const existing = await UserService.findUserByEmailFromDB(user.email);
+    const existing = await UserService.getUserByEmailFromDB(user.email);
 
     if (existing) {
       return res
@@ -97,11 +97,11 @@ async function addUser(req, res) {
 // Edit User Info
 async function editUserInfo(req, res) {
   try {
-    const userId = req.params.id;
+    const { email } = req.query;
     const updatedUserInfo = req.body;
-    const { email } = req.decoded;
+    const { email: currentEmail } = req.decoded;
 
-    const existingUser = await UserService.findUserByIdFromDB(userId);
+    const existingUser = await UserService.getUserByEmailFromDB(email);
 
     if (!existingUser) {
       return res
@@ -109,26 +109,26 @@ async function editUserInfo(req, res) {
         .json({ success: false, message: "User not found." });
     }
 
-    if (existingUser.email !== email) {
+    if (existingUser.email !== currentEmail) {
       return res.status(400).json({
         success: false,
         message: "You can't change other user's info",
       });
     }
 
-    const result = await UserService.editUserInfoFromDB(
-      userId,
-      updatedUserInfo,
-    );
+    const result = await UserService.editUserInfoFromDB(email, updatedUserInfo);
+    console.log(result);
 
     if (result.modifiedCount > 0) {
       return res
         .status(200)
-        .json({ success: true, message: "User info updated" });
+        .json({ success: true, message: "Profile updated" });
     }
-    return res
-      .status(200)
-      .json({ success: false, message: "No changes were made." });
+    if (result.modifiedCount === 0) {
+      return res
+        .status(200)
+        .json({ success: true, message: "No changes were made." });
+    }
   } catch (error) {
     console.error("PATCH User error", error);
     return res
@@ -143,7 +143,7 @@ async function deleteUser(req, res) {
     const userId = req.params.id;
     const { email } = req.decoded;
 
-    const existingUser = await UserService.findUserByIdFromDB(userId);
+    const existingUser = await UserService.getUserByIdFromDB(userId);
 
     if (!existingUser) {
       return res
@@ -180,7 +180,7 @@ async function changeUserRole(req, res) {
     const { email: currentEmail } = req.decoded;
     const { role } = req.body;
 
-    const existingUser = await UserService.findUserByEmailFromDB(email);
+    const existingUser = await UserService.getUserByEmailFromDB(email);
 
     if (!existingUser) {
       return res
@@ -224,37 +224,6 @@ async function changeUserRole(req, res) {
   }
 }
 
-// Check User Role
-async function checkUserRole(req, res) {
-  try {
-    const { email } = req.query;
-
-    if (email !== req.decoded.email) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Forbidden access!" });
-    }
-
-    const user = await UserService.findUserByEmailFromDB(email);
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: user?.role,
-    });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error." });
-  }
-}
-
 export const UserController = {
   getAllUsers,
   getUserById,
@@ -262,6 +231,5 @@ export const UserController = {
   addUser,
   deleteUser,
   changeUserRole,
-  checkUserRole,
   getUserByEmail,
 };

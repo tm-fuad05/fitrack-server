@@ -5,12 +5,12 @@ async function getAllUsersfromDB() {
   return result;
 }
 
-async function findUserByEmailFromDB(email) {
+async function getUserByEmailFromDB(email) {
   const result = await User.findOne({ email }).select("-__v");
   return result;
 }
 
-async function findUserByIdFromDB(userId) {
+async function getUserByIdFromDB(userId) {
   const result = await User.findById(userId).select("-__v");
   return result;
 }
@@ -20,13 +20,15 @@ async function addUserInDB(payload) {
   return result;
 }
 
-async function editUserInfoFromDB(userId, payload) {
+async function editUserInfoFromDB(email, payload) {
   const updatedProfile = {
     $set: {
       name: payload.name,
     },
   };
-  const result = await User.updateOne({ _id: userId }, updatedProfile);
+  const result = await User.updateOne({ email }, updatedProfile, {
+    timestamps: false,
+  });
   return result;
 }
 
@@ -47,9 +49,9 @@ async function changeUserRoleFromDB(email, role) {
 
 export const UserService = {
   getAllUsersfromDB,
-  findUserByEmailFromDB,
+  getUserByEmailFromDB,
   addUserInDB,
-  findUserByIdFromDB,
+  getUserByIdFromDB,
   editUserInfoFromDB,
   deleteUserFromDB,
   changeUserRoleFromDB,

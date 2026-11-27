@@ -74,7 +74,7 @@ async function voteCommunity(req, res) {
 
     return res
       .status(200)
-      .json({ success: false, message: "No changess were made." });
+      .json({ success: true, message: "No changess were made." });
   } catch (error) {
     console.error(error);
     return res

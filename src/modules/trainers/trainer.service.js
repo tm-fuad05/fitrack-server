@@ -44,7 +44,7 @@ async function deleteTrainerFromDB(email) {
 }
 
 // Manage Slots : (Add)
-async function addTrainerSlotInDB(trainerId, payload) {
+async function editTrainerInDB(trainerId, payload) {
   const updatedSlots = {
     $set: {
       availableDays: payload.availableDays,
@@ -52,20 +52,9 @@ async function addTrainerSlotInDB(trainerId, payload) {
     },
   };
 
-  const result = await Trainer.updateOne({ _id: trainerId }, updatedSlots);
-
-  return result;
-}
-
-// Manage Slots : (Delete)
-async function deleteTrainerSlotFromDB(trainerId, payload) {
-  const updatedSlots = {
-    $set: {
-      availableDays: payload,
-    },
-  };
-
-  const result = await Trainer.updateOne({ _id: trainerId }, updatedSlots);
+  const result = await Trainer.updateOne({ _id: trainerId }, updatedSlots, {
+    timestamps: false,
+  });
 
   return result;
 }
@@ -74,8 +63,7 @@ export const TrainerService = {
   addTrainerInDB,
   getAllTrainersFromDB,
   getTrainerByNameFromDB,
-  addTrainerSlotInDB,
-  deleteTrainerSlotFromDB,
+  editTrainerInDB,
   getTrainerByEmailFromDB,
   getTrainerByIdFromDB,
   deleteTrainerFromDB,

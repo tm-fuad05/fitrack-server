@@ -15,15 +15,9 @@ router.post(
   UserController.addUser,
 );
 router.get(
-  "/user",
+  "/me",
   validateRequest(globalValidation.emailQuerySchema),
   UserController.getUserByEmail,
-);
-router.get(
-  "/check-user-role",
-  verifyToken,
-  validateRequest(globalValidation.emailQuerySchema),
-  UserController.checkUserRole,
 );
 
 router.patch(
@@ -34,15 +28,16 @@ router.patch(
   validateRequest(UserValidation.updateUserRoleSchema),
   UserController.changeUserRole,
 );
-
-router.get("/:id", verifyToken, verifyAdmin, UserController.getUserById);
-
 router.patch(
-  "/:id",
+  "/update",
   verifyToken,
+  validateRequest(globalValidation.emailQuerySchema),
   validateRequest(UserValidation.updateUserSchema),
   UserController.editUserInfo,
 );
+
+router.get("/:id", verifyToken, verifyAdmin, UserController.getUserById);
+
 router.delete(
   "/delete/:id",
   verifyToken,
